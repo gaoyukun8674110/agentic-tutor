@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from app.agents import Orchestrator
+from app.agents.base import AgentContext
+from app.agents.diagnostician import DiagnosticianAgent
 from app.agents.tools import LearnerStoreTool, MathTool, RetrieverTool, ToolRegistry, WebSearchTool
 from app.api.deps import get_current_user
 from app.config import settings
@@ -113,7 +115,7 @@ def get_orchestrator(
     db: Session = Depends(get_db),
     llm: LLMService = Depends(get_llm_service),
 ) -> Orchestrator:
-    return Orchestrator(llm, tools=_build_agent_tools(db, llm))
+    return Orchestrator(llm, tools=_build_agent_tools(db, llm), db=db)
 
 
 def _validate_provider_for_write(provider_id: str) -> None:
@@ -821,6 +823,8 @@ async def tutor_chat(
         result["material_context_error"] = tutor_context.get("material_context_error")
         result["web_search_used"] = tutor_context.get("web_search_used", False)
         result["used_tools"] = tutor_context.get("used_tools", [])
+        result["agent_path"] = ["classify", "tutor"]
+        result["diagnosis"] = None
         if retrieved_material_chunks:
             result["material_context"] = {"chunks": retrieved_material_chunks}
         return result
@@ -980,6 +984,39 @@ def diagnose_error(
     """诊断错误"""
     user_id = current_user.username
     analytics = AnalyticsService(db)
+    student = StudentModelService(db).get_or_create_student(user_id)
+    resolved = _resolve_provider_or_raise(db, current_user, "auto")
+
+    agent_result = DiagnosticianAgent(llm, db=db).run(
+        AgentContext(user_id=user_id, student_id=student.id, session_id=session_id),
+        {
+            "question_content": request.question_content,
+            "student_answer": request.student_answer,
+            "correct_answer": request.correct_answer,
+            "standard_solution": request.standard_solution,
+            "material_chunks": [],
+            "resolved": resolved,
+            "analytics": analytics,
+            "write_mastery": True,
+        },
+    )
+    if "error" in agent_result.state_updates:
+        raise api_error(502, "llm_provider_error", "Model provider is temporarily unavailable")
+    if resolved.source == "user":
+        LLMCredentialService(db).record_used(resolved.credential_id)
+
+    return {
+        "diagnosis": agent_result.content or "",
+        "error_type": agent_result.state_updates.get("error_type"),
+        "is_correct": agent_result.state_updates.get("is_correct"),
+        "math_verification": agent_result.raw.get("math_verification"),
+        "skills_updated": agent_result.state_updates.get("skills_updated", []),
+        "question_id": agent_result.state_updates.get("question_id"),
+        "agent_type": "diagnostician",
+        "credential_source": resolved.source,
+        "credential_fingerprint": getattr(resolved, "fingerprint", None),
+    }
+
     math_verification = llm.math_tools.verify_answer(request.student_answer, request.correct_answer)
     prompt = f"""题目：{request.question_content}
 

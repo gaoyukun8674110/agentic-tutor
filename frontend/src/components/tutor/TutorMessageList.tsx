@@ -30,6 +30,24 @@ export function TutorMessageList({
     if (message.credentialSource === 'local') return t('本地 Ollama', 'Local Ollama');
     return null;
   };
+  const errorTypeLabel = (errorType: string) => {
+    switch (errorType) {
+      case 'concept_error':
+        return t('概念错误', 'Concept error');
+      case 'method_error':
+        return t('方法错误', 'Method error');
+      case 'calculation_error':
+        return t('计算错误', 'Calculation error');
+      case 'reading_error':
+        return t('审题错误', 'Reading error');
+      case 'none':
+        return t('答案正确', 'Correct');
+      default:
+        return errorType;
+    }
+  };
+  const formatMastery = (value: number | null | undefined) =>
+    value == null ? t('新', 'new') : value.toFixed(2);
 
   return (
     <div className="space-y-6 py-8" style={{ maxWidth: 820, margin: '0 auto' }}>
@@ -67,6 +85,36 @@ export function TutorMessageList({
                       {credentialLabel(message)}
                     </span>
                   )}
+                </div>
+              )}
+              {!isUser && message.diagnosis && (
+                <div
+                  data-testid="diagnosis-badge"
+                  className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium"
+                  style={{ color: tokens.textSecondary }}
+                >
+                  <span
+                    className="rounded-full border px-2 py-0.5"
+                    style={{
+                      borderColor: 'var(--ai-border-subtle)',
+                      background: tokens.surfaceMuted,
+                    }}
+                  >
+                    {t('已诊断', 'Diagnosed')} · {errorTypeLabel(message.diagnosis.error_type)}
+                  </span>
+                  {message.diagnosis.skills_updated.map((skill) => (
+                    <span
+                      key={skill.skill_id}
+                      className="rounded-full border px-2 py-0.5"
+                      style={{
+                        borderColor: 'var(--ai-border-subtle)',
+                        background: tokens.surfaceMuted,
+                      }}
+                    >
+                      {skill.skill_name} {formatMastery(skill.mastery_before)} →{' '}
+                      {formatMastery(skill.mastery_score)}
+                    </span>
+                  ))}
                 </div>
               )}
               <MathMessage content={message.content} isUser={isUser} />

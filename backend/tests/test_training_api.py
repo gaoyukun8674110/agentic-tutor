@@ -104,7 +104,7 @@ class TrainingApiOwnershipTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertEqual(payload["target_skills"], ["linear-equations"])
-        self.assertEqual(payload["target_skill_sources"][0]["source"], "weak")
+        self.assertEqual(payload["target_skill_sources"][0]["source"], "due_review")
 
 
 if __name__ == "__main__":

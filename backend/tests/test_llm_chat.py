@@ -270,16 +270,15 @@ class LLMChatTests(unittest.TestCase):
     def test_exam_prompt_matches_built_in_training_rules(self):
         service = LLMService()
 
-        expected_prompt = """问题不必Q1，Q2，Q3，直接1，2，3就行；
-答案你留着，不要展示出来，后面我给你答案你直接给我判就行；
-题目的话要对齐雅思题目难度，在有情景的情况下出选择题，只需要有A，B选项就OK；
-是关键处出A，B选项就行，不是出A,B问句;题目15个起步；
-如果一个知识点下有几个小知识点的话要先针对每个对应的小知识点进行每个至少5题的小专项训练再接着对整个知识点做专项训练；
-出过一次的题不要出第二次;在提交答案之后要对答案进行对错判断并进行分析薄弱项；并且要求对薄弱项的知识点讲解能"一刀切";
-一刀切规则的时候要给一个简单的示例,不然我看不懂!如果发现哪里有薄弱项，那我们接下来就对薄弱项进行专项加强；
-每次出题记得把答案打乱。"""
-        self.assertEqual(service.prompt_profiles["exam"]["system_prompt"], expected_prompt)
-        self.assertTrue(service._build_system_prompt(prompt_profile="exam").startswith(expected_prompt))
+        exam_prompt = service.prompt_profiles["exam"]["system_prompt"]
+        self.assertIn("考试训练 Tutor", exam_prompt)
+        self.assertIn("每轮 5-10 题", exam_prompt)
+        self.assertIn("题号用 1、2、3", exam_prompt)
+        self.assertIn("不要用 Q1、Q2、Q3", exam_prompt)
+        self.assertIn("出题时不展示答案", exam_prompt)
+        self.assertIn("学生提交后逐题判定对错", exam_prompt)
+        self.assertIn("选择题每次打乱选项顺序", exam_prompt)
+        self.assertTrue(service._build_system_prompt(prompt_profile="exam").startswith(exam_prompt))
 
     def test_detect_learning_phase_from_student_message(self):
         service = LLMService()

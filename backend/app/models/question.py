@@ -58,6 +58,7 @@ class Question(Base):
     # 来源信息
     source = Column(String(255), nullable=True)  # 题源（教材章节、真题等）
     chapter = Column(String(100), nullable=True)  # 所属章节
+    owner_user_id = Column(String(100), nullable=True, index=True)  # NULL = 系统题
 
     # 关系
     tags = relationship("QuestionTag", back_populates="question", cascade="all, delete-orphan")
@@ -114,6 +115,8 @@ class Skill(Base):
     name = Column(String(200), nullable=False)
     chapter = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
+    owner_user_id = Column(String(100), nullable=True, index=True)  # NULL = 系统内置
+    created_at = Column(String(50), nullable=True)
 
 
 class SkillEdge(Base):

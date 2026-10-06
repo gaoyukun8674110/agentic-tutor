@@ -67,12 +67,42 @@ class StudentModelService:
         if not question_skills:
             return {"updated_skills": []}
 
+        skills = [{"skill_id": qs.skill_id, "skill_name": qs.skill_name} for qs in question_skills]
+        return self.update_mastery_for_skills(
+            student_id,
+            skills,
+            is_correct=is_correct,
+            time_spent=time_spent,
+            hint_count=hint_count,
+            error_reason=error_reason,
+            source="training",
+        )
+
+    def update_mastery_for_skills(
+        self,
+        student_id: int,
+        skills: list[dict[str, str]],
+        *,
+        is_correct: bool,
+        time_spent: float = 0.0,
+        hint_count: int = 0,
+        error_reason: str | None = None,
+        source: str = "chat",
+    ) -> dict[str, Any]:
+        """按知识点列表更新掌握度。skills 元素形如 {"skill_id": str, "skill_name": str}。
+
+        返回 {"updated_skills": [{"skill_id", "skill_name", "mastery_score", "bkt_p_known", "bkt_half_life"}, ...]}。
+        skills 为空时不做任何写入，直接返回 {"updated_skills": []}。
+        """
+        if not skills:
+            return {"updated_skills": []}
+
         updated_skills = []
         now = datetime.now().isoformat()
 
-        for qs in question_skills:
-            skill_id = qs.skill_id
-            skill_name = qs.skill_name
+        for skill in skills:
+            skill_id = skill["skill_id"]
+            skill_name = skill["skill_name"]
 
             # 获取或创建掌握度记录
             mastery = self.get_mastery(student_id, skill_id)
@@ -85,6 +115,7 @@ class StudentModelService:
                     updated_at=now,
                 )
                 self.db.add(mastery)
+                self.db.flush()
 
             # 更新统计数据
             mastery.total_attempts += 1

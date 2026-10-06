@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from app.agents.base import AgentContext
 from app.agents.planner import PlannerAgent
-from app.agents.tools import LearnerStoreTool, ToolRegistry
 from app.api.deps import get_current_user
 from app.database import get_db
 from app.models.session import LearningGoal, TrainingSession
@@ -55,25 +54,21 @@ def _planned_target_skills(db: Session, student_id: int) -> tuple[list[str] | No
         if targets:
             return [str(target["skill_id"]) for target in targets if target.get("skill_id")], targets
 
-    tools = ToolRegistry({"learner_store": LearnerStoreTool(db)})
-    weak_skills = tools.get("learner_store").weak_skills(student_id, k=3)
-    if not weak_skills:
-        return None, []
-
-    planner_result = PlannerAgent().run(
-        AgentContext(user_id="", student_id=student_id, tools=tools),
-        {"mastery_info": {"recommended_skills": [skill["skill_id"] for skill in weak_skills]}},
-    )
+    planner_result = PlannerAgent(db).run(AgentContext(user_id="", student_id=student_id), {"limit": 3})
     target_skills = list(planner_result.state_updates.get("target_skills") or [])
-    return target_skills, [
+    if not target_skills:
+        return None, []
+    today_plan = planner_result.state_updates.get("today_plan") or {}
+    sources = [
         {
-            "skill_id": skill["skill_id"],
-            "skill_name": skill.get("skill_name"),
-            "source": "weak",
+            "skill_id": item["skill_id"],
+            "skill_name": item.get("skill_name"),
+            "source": item["reason"],
         }
-        for skill in weak_skills
-        if skill["skill_id"] in target_skills
+        for item in today_plan.get("items", [])
+        if item["skill_id"] in target_skills
     ]
+    return target_skills, sources
 
 
 @router.post("/sessions", response_model=dict)

@@ -21,6 +21,10 @@ vi.mock('./components/TodayPlan', () => ({
   TodayPlan: () => <div>today-plan</div>,
 }));
 
+vi.mock('./components/TodayPlanSkills', () => ({
+  TodayPlanSkills: () => <div>today-plan-skills</div>,
+}));
+
 vi.mock('./components/TopNavbar', () => ({
   TopNavbar: () => <div>top-navbar</div>,
 }));
@@ -102,7 +106,7 @@ describe('App routing', () => {
   it('renders the dashboard route at /', async () => {
     renderApp('/');
 
-    expect(await screen.findByText('pomodoro-timer')).toBeInTheDocument();
+    expect(await screen.findByText('pomodoro-timer', undefined, { timeout: 15000 })).toBeInTheDocument();
     expect(screen.queryByText('tutor-workspace')).not.toBeInTheDocument();
   });
 

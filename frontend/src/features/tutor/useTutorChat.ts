@@ -312,14 +312,22 @@ export function useTutorChat({
           'Tutor';
 
         if (response.messages?.length) {
+          const mapped = toChatMessages(
+            response.messages,
+            response.credential_source,
+            response.credential_fingerprint,
+          );
+          const lastAssistantIndex = mapped.map((item) => item.role).lastIndexOf('assistant');
+          if (lastAssistantIndex >= 0) {
+            mapped[lastAssistantIndex] = {
+              ...mapped[lastAssistantIndex],
+              diagnosis: response.diagnosis ?? null,
+            };
+          }
           dispatch({
             type: 'patch',
             updates: {
-              messages: toChatMessages(
-                response.messages,
-                response.credential_source,
-                response.credential_fingerprint,
-              ),
+              messages: mapped,
             },
           });
         } else {
@@ -335,6 +343,7 @@ export function useTutorChat({
                   content: response.message.content,
                   credentialSource: response.credential_source,
                   credentialFingerprint: response.credential_fingerprint,
+                  diagnosis: response.diagnosis ?? null,
                 },
               ],
             },

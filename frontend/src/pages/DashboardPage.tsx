@@ -6,10 +6,12 @@ import { PomodoroTimer } from '../components/PomodoroTimer';
 import { StudyCalendar } from '../components/StudyCalendar';
 import { StudyStats } from '../components/StudyStats';
 import { TodayPlan } from '../components/TodayPlan';
+import { TodayPlanSkills } from '../components/TodayPlanSkills';
 import { TopNavbar } from '../components/TopNavbar';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../auth/AuthContext';
 import { fetchDashboardSummary } from '../utils/dashboardApi';
+import { fetchMastery } from '../utils/studentApi';
 import { cardSurfaceStyle, primaryActionStyle } from '../utils/glassStyles';
 import { useSettings } from '../utils/settings';
 
@@ -30,6 +32,14 @@ export function DashboardPage() {
     enabled: Boolean(user),
     retry: false,
   });
+  const { data: masteryData } = useQuery({
+    queryKey: ['student', 'mastery', user?.username],
+    queryFn: ({ signal }) => fetchMastery(user?.username ?? '', { signal }),
+    enabled: Boolean(user),
+    retry: false,
+  });
+  const masteries = masteryData?.masteries ?? [];
+  const masteredCount = masteries.filter((item) => item.mastery_score >= 0.7).length;
 
   const refreshDashboard = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ['dashboard-summary', user?.username] });
@@ -55,8 +65,8 @@ export function DashboardPage() {
     },
     {
       icon: Target,
-      label: t('完成任务', 'Tasks completed'),
-      value: `${completedTasks} / ${totalTasks}`,
+      label: t('Skills mastered', 'Skills mastered'),
+      value: `${masteredCount} / ${masteries.length}`,
     },
     {
       icon: Brain,
@@ -236,6 +246,7 @@ export function DashboardPage() {
 
             <section className="space-y-6">
               {renderStatCard(stats[1])}
+              <TodayPlanSkills username={user?.username ?? ''} />
               <TodayPlan tasks={dashboardSummary?.tasks ?? []} onDataChange={refreshDashboard} />
             </section>
 

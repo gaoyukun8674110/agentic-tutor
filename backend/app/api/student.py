@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.agents.base import AgentContext
+from app.agents.planner import PlannerAgent
 from app.api.deps import get_current_user, require_matching_user
 from app.database import get_db
 from app.models.user import User
@@ -95,3 +97,27 @@ def get_review_plan(
         "user_id": user_id,
         "review_plan": plan,
     }
+
+
+@router.get("/{user_id}/today-plan", response_model=dict)
+def get_today_plan(
+    user_id: str,
+    limit: int = 3,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """今天练什么：半衰期到期复习 + 最近发展区 + 已解锁知识点"""
+    require_matching_user(user_id, current_user)
+    service = StudentModelService(db)
+    student = service.get_or_create_student(user_id)
+
+    result = PlannerAgent(db).run(
+        AgentContext(user_id=user_id, student_id=student.id),
+        {"limit": max(1, min(limit, 10))},
+    )
+    plan = result.state_updates.get("today_plan") or {
+        "generated_at": None,
+        "items": [],
+        "empty_reason": "no_skills",
+    }
+    return {"user_id": user_id, **plan}

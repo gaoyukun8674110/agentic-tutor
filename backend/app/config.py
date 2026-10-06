@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     RAG_MATERIAL_MIN_SCORE: float = 0.35
     AGENT_TOOL_CALLING_ENABLED: bool = True
     MAX_TOOL_ITERATIONS: int = 4
+    AGENT_GRAPH_ENGINE: str = "langgraph"
+    CHAT_DIAGNOSIS_ENABLED: bool = True
+    CHAT_INTENT_LLM_FALLBACK: bool = False
+    RAG_SPLITTER: str = "langchain"
 
     # OpenAI-compatible chat providers
     DEEPSEEK_API_KEY: str | None = None

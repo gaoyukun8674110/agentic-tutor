@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Brain } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import { LandingCtaSection } from '../components/LandingCtaSection';
 import { Button } from '../components/ui/button';
 import { getUserFacingError } from '../utils/apiClient';
 import { cardSurfaceStyle, primaryActionStyle } from '../utils/glassStyles';
@@ -35,16 +36,14 @@ export function LoginPage() {
   };
 
   return (
-    <main
-      className="relative flex min-h-screen items-center justify-center px-6 py-10"
-      style={{ ...textStyle, color: tokens.textPrimary }}
-    >
+    <main className="relative min-h-screen" style={{ ...textStyle, color: tokens.textPrimary }}>
       <div className="fixed inset-0" style={{ background: tokens.pageGradient }} />
-      <form
-        onSubmit={submit}
-        className="relative w-full max-w-md rounded-2xl p-8 shadow-xl"
-        style={cardSurfaceStyle(tokens)}
-      >
+      <section className="relative flex min-h-screen items-center justify-center px-6 py-10">
+        <form
+          onSubmit={submit}
+          className="relative w-full max-w-md rounded-2xl p-8 shadow-xl"
+          style={cardSurfaceStyle(tokens)}
+        >
         <div className="mb-8 flex items-center gap-3">
           <div
             className="flex h-11 w-11 items-center justify-center rounded-xl"
@@ -120,7 +119,9 @@ export function LoginPage() {
             {t('注册', 'Create one')}
           </Link>
         </p>
-      </form>
+        </form>
+      </section>
+      <LandingCtaSection />
     </main>
   );
 }

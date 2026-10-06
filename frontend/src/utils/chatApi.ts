@@ -60,6 +60,22 @@ export const FALLBACK_PROMPT_PROFILES: PromptProfile[] = [
 
 export type LearningPhase = 'planning' | 'understanding' | 'feynman' | 'general';
 
+export interface DiagnosisSkillUpdate {
+  skill_id: string;
+  skill_name: string;
+  mastery_score: number;
+  bkt_p_known?: number | null;
+  bkt_half_life?: number | null;
+  mastery_before?: number | null;
+}
+
+export interface ChatDiagnosis {
+  error_type: string;
+  is_correct: boolean;
+  skills_updated: DiagnosisSkillUpdate[];
+  question_id?: number | null;
+}
+
 export interface ChatMessagePayload {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -98,6 +114,8 @@ export interface TutorChatResponse {
   latency_ms?: number;
   credential_source?: 'user' | 'global' | 'local';
   credential_fingerprint?: string | null;
+  agent_path?: string[];
+  diagnosis?: ChatDiagnosis | null;
 }
 
 export interface TutorConversationSummary {
