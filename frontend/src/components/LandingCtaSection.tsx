@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type CSSProperties, type ElementType, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ElementType,
+  type ReactNode,
+} from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 import { cn } from './ui/utils';
@@ -51,7 +58,10 @@ export function MIcon({
   return (
     <span
       aria-hidden
-      className={cn('material-symbols-outlined inline-flex select-none items-center justify-center', className)}
+      className={cn(
+        'material-symbols-outlined inline-flex select-none items-center justify-center',
+        className,
+      )}
       style={{
         fontSize: size,
         lineHeight: 1,
@@ -191,7 +201,10 @@ export function ChatPanel({ initialScroll = 'bottom', animateMessagesIn = false 
         </div>
       </div>
 
-      <div ref={listRef} className="scrollbar-hide min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5">
+      <div
+        ref={listRef}
+        className="scrollbar-hide min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5"
+      >
         {messages.map((message, index) => {
           const bubble = (
             <div className={cn('flex', message.role === 'user' ? 'justify-end' : 'justify-start')}>
@@ -294,8 +307,8 @@ export function VelorahHeroPreview() {
           <em className="not-italic text-white/55">memory.</em>
         </h1>
         <p className="animate-fade-rise-delay mt-2 max-w-[80%] text-[9px] leading-relaxed text-white/60 sm:mt-3 sm:max-w-sm sm:text-[11px] md:mt-4 md:max-w-md md:text-xs">
-          AI Tutor reads your recent answers, finds the fragile skill, and turns it into a
-          focused practice path for the next study session.
+          AI Tutor reads your recent answers, finds the fragile skill, and turns it into a focused
+          practice path for the next study session.
         </p>
         <button className="animate-fade-rise-delay-2 liquid-glass mt-3 rounded-full px-4 py-1.5 text-[9px] text-white sm:mt-4 sm:px-5 sm:py-2 sm:text-[10px] md:mt-5 md:px-6 md:py-2.5">
           Open today's plan

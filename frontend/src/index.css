@@ -1,12 +1,12 @@
 @import 'tailwindcss';
 
 @theme inline {
-  --color-landing-surface: rgba(255, 255, 255, 0.10);
+  --color-landing-surface: rgba(255, 255, 255, 0.1);
   --color-landing-surface-hover: rgba(255, 255, 255, 0.16);
-  --color-landing-border: rgba(255, 255, 255, 0.10);
-  --color-landing-border-strong: rgba(255, 255, 255, 0.20);
-  --color-landing-text: rgba(255, 255, 255, 0.80);
-  --color-landing-text-muted: rgba(255, 255, 255, 0.60);
+  --color-landing-border: rgba(255, 255, 255, 0.1);
+  --color-landing-border-strong: rgba(255, 255, 255, 0.2);
+  --color-landing-text: rgba(255, 255, 255, 0.8);
+  --color-landing-text-muted: rgba(255, 255, 255, 0.6);
 }
 
 /*
@@ -155,7 +155,7 @@ body {
 
 .liquid-glass {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   box-shadow:

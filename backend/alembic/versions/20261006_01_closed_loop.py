@@ -24,6 +24,10 @@ def _column_exists(connection, table_name: str, column_name: str) -> bool:
     return column_name in {column["name"] for column in inspector.get_columns(table_name)}
 
 
+def _table_exists(connection, table_name: str) -> bool:
+    return table_name in sa.inspect(connection).get_table_names()
+
+
 def _index_exists(connection, table_name: str, index_name: str) -> bool:
     inspector = sa.inspect(connection)
     if table_name not in inspector.get_table_names():
@@ -33,6 +37,11 @@ def _index_exists(connection, table_name: str, index_name: str) -> bool:
 
 def upgrade() -> None:
     connection = op.get_bind()
+    # The base schema is created by the application's debug bootstrap on a
+    # fresh database. There is nothing for this additive migration to alter
+    # until those tables exist.
+    if not _table_exists(connection, "skills") or not _table_exists(connection, "questions"):
+        return
     if not _column_exists(connection, "skills", "owner_user_id"):
         op.add_column("skills", sa.Column("owner_user_id", sa.String(length=100), nullable=True))
     if not _index_exists(connection, "skills", "ix_skills_owner_user_id"):

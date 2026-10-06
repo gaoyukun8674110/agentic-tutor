@@ -106,7 +106,9 @@ describe('App routing', () => {
   it('renders the dashboard route at /', async () => {
     renderApp('/');
 
-    expect(await screen.findByText('pomodoro-timer', undefined, { timeout: 15000 })).toBeInTheDocument();
+    expect(
+      await screen.findByText('pomodoro-timer', undefined, { timeout: 15000 }),
+    ).toBeInTheDocument();
     expect(screen.queryByText('tutor-workspace')).not.toBeInTheDocument();
   });
 

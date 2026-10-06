@@ -38,9 +38,11 @@ describe('studentApi', () => {
   });
 
   it('fetchMastery uses the expected path', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ user_id: 'alice', masteries: [] }), { status: 200 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify({ user_id: 'alice', masteries: [] }), { status: 200 }),
+      );
 
     const result = await fetchMastery('alice');
 

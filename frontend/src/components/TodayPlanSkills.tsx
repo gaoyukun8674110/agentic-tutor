@@ -42,7 +42,9 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
       unlocked: t('Unlocked', 'Unlocked'),
     };
     const base = labels[reasonKey(reason)];
-    return isBlocked(reason) ? `${base} / ${t('Prerequisite pending', 'Prerequisite pending')}` : base;
+    return isBlocked(reason)
+      ? `${base} / ${t('Prerequisite pending', 'Prerequisite pending')}`
+      : base;
   };
 
   const masteryColor = (value: number) => {
@@ -71,7 +73,9 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
         {t('Practice today', 'Practice today')}
       </p>
 
-      {isLoading && <p style={{ color: tokens.textSecondary }}>{t('Planning...', 'Planning...')}</p>}
+      {isLoading && (
+        <p style={{ color: tokens.textSecondary }}>{t('Planning...', 'Planning...')}</p>
+      )}
       {isError && (
         <p style={{ color: tokens.danger }}>
           {t("Unable to load today's plan", "Unable to load today's plan")}
