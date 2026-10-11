@@ -11,8 +11,8 @@
 
 /*
  * 砚思 · Inkwell Tutor —— 宣纸与松烟主题
- * 宣纸灰底 / 松烟墨字 / 青瓷绿为主强调 / 朱砂只在 agent 主动落印 / 旧铜点缀数据。
- * 强调色刻意避开常见的赤陶橙+海军蓝，改用书斋器物的青瓷。
+ * 墨色为主操作色 / 旧铜点缀数据 / 朱砂只在 agent 主动落印 / 绿仅用于语义完成。
+ * 主按钮回到沉稳墨蓝，避免把“完成”语义绿误用为全站强调色。
  */
 :root {
   --ai-serif: 'Noto Serif SC', 'Songti SC', 'Georgia', serif;
@@ -40,8 +40,8 @@
   --ai-placeholder-text: #9a9a90;
   --ai-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 14px 40px rgba(70, 62, 40, 0.09);
   --ai-shadow-soft: 0 6px 20px rgba(70, 62, 40, 0.07);
-  --ai-accent-primary: #5e7a6e;
-  --ai-accent-primary-soft: #dfe7e0;
+  --ai-accent-primary: #2f6690;
+  --ai-accent-primary-soft: #dce9f5;
   --ai-accent-secondary: #b08d57;
   --ai-accent-secondary-soft: #efe5d2;
   --ai-success: #5e7a6e;
@@ -50,14 +50,14 @@
   --ai-warning-soft: #efe5d2;
   --ai-danger: #9e4a3c;
   --ai-danger-soft: #ecd9d3;
-  --ai-info: #5e7a6e;
-  --ai-info-soft: #dfe7e0;
+  --ai-info: #2f6690;
+  --ai-info-soft: #dce9f5;
   --ai-chart-grid: #ddd5c4;
   --ai-chart-axis: #c1b8a4;
   --ai-chart-tooltip-bg: rgba(251, 248, 241, 0.97);
-  --ai-chat-user-bubble: #465e54;
-  --ai-chat-user-border: #465e54;
-  --ai-chat-user-text: #f1efe6;
+  --ai-chat-user-bubble: #16334d;
+  --ai-chat-user-border: #16334d;
+  --ai-chat-user-text: #f2f8ff;
   --ai-chat-assistant-bubble: #fbf8f1;
   --ai-chat-assistant-border: #ddd5c4;
   --ai-chat-assistant-text: #20242a;
@@ -66,8 +66,8 @@
   --ai-source-text: #20242a;
   --ai-code-surface: #20242a;
   --ai-code-text: #f1efe6;
-  --ai-primary-action-gradient: linear-gradient(135deg, #465e54 0%, #5e7a6e 100%);
-  --ai-progress-gradient: linear-gradient(90deg, #5e7a6e 0%, #6f8c7e 100%);
+  --ai-primary-action-gradient: linear-gradient(135deg, #002b42 0%, #1b4668 100%);
+  --ai-progress-gradient: linear-gradient(90deg, #2f6690 0%, #5a8fbb 100%);
 
   /* agent 主动行为的朱砂印记 —— 只在诊断/复盘/查证时出现 */
   --ai-seal: #9e4a3c;
@@ -102,8 +102,8 @@ body[data-theme='dark'] {
   --ai-placeholder-text: #74736a;
   --ai-shadow: 0 18px 56px rgba(0, 0, 0, 0.5);
   --ai-shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.38);
-  --ai-accent-primary: #8fb0a1;
-  --ai-accent-primary-soft: rgba(143, 176, 161, 0.15);
+  --ai-accent-primary: #8cbfe6;
+  --ai-accent-primary-soft: rgba(140, 191, 230, 0.16);
   --ai-accent-secondary: #cba36a;
   --ai-accent-secondary-soft: rgba(203, 163, 106, 0.16);
   --ai-success: #8fb0a1;
@@ -112,14 +112,14 @@ body[data-theme='dark'] {
   --ai-warning-soft: rgba(203, 163, 106, 0.16);
   --ai-danger: #cd7a68;
   --ai-danger-soft: rgba(205, 122, 104, 0.16);
-  --ai-info: #8fb0a1;
-  --ai-info-soft: rgba(143, 176, 161, 0.15);
+  --ai-info: #8cbfe6;
+  --ai-info-soft: rgba(140, 191, 230, 0.16);
   --ai-chart-grid: #2c333b;
   --ai-chart-axis: #3b434c;
   --ai-chart-tooltip-bg: rgba(32, 37, 43, 0.97);
-  --ai-chat-user-bubble: #3a4f46;
-  --ai-chat-user-border: rgba(143, 176, 161, 0.32);
-  --ai-chat-user-text: #e7e3d6;
+  --ai-chat-user-bubble: #1b3d5e;
+  --ai-chat-user-border: rgba(140, 191, 230, 0.32);
+  --ai-chat-user-text: #e8f1fb;
   --ai-chat-assistant-bubble: #20252b;
   --ai-chat-assistant-border: rgba(196, 206, 190, 0.14);
   --ai-chat-assistant-text: #e7e3d6;
@@ -128,8 +128,8 @@ body[data-theme='dark'] {
   --ai-source-text: #e7e3d6;
   --ai-code-surface: #0e1216;
   --ai-code-text: #e7e3d6;
-  --ai-primary-action-gradient: linear-gradient(135deg, #3a4f46 0%, #4c6559 100%);
-  --ai-progress-gradient: linear-gradient(90deg, #6f8c7e 0%, #8fb0a1 100%);
+  --ai-primary-action-gradient: linear-gradient(135deg, #cfe4f7 0%, #a7c8e4 100%);
+  --ai-progress-gradient: linear-gradient(90deg, #6fa7d6 0%, #8cbfe6 100%);
 
   --ai-seal: #cd7a68;
   --ai-seal-soft: rgba(205, 122, 104, 0.18);
