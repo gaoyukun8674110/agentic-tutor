@@ -18,6 +18,11 @@ RUN groupadd --system app \
     && mkdir -p /data/storage/materials \
     && chown -R app:app /app /data
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-chi-sim \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
