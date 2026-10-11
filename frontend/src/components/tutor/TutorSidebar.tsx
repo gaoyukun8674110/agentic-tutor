@@ -36,6 +36,9 @@ interface TutorSidebarProps {
   materials: StudyMaterial[];
   selectedMaterialIds: number[];
   isUploadingMaterial: boolean;
+  isRefreshingMaterials: boolean;
+  isReingestingMaterial: boolean;
+  materialPollingExpired: boolean;
   materialError: string | null;
   loadError: string | null;
   historyLoadError: string | null;
@@ -61,6 +64,8 @@ interface TutorSidebarProps {
   onCustomPromptChange: (prompt: string) => void;
   onMaterialUpload: (event: ChangeEvent<HTMLInputElement>) => void;
   onToggleMaterialSelection: (materialId: number) => void;
+  onRefreshMaterials: () => void;
+  onReingestMaterial: (materialId: number) => void;
   onToggleTimer: () => void;
   onResetTimer: () => void;
   onStartNextRound: () => void;
@@ -100,6 +105,27 @@ function sidebarCardStyle(tokens: ThemeTokens) {
   };
 }
 
+function materialStatusCopy(
+  material: StudyMaterial,
+  t: <T extends string>(zh: T, en: T) => T,
+): { label: string; tone: 'ready' | 'pending' | 'failed' | 'warning' } {
+  if (material.status === 'failed') return { label: t('失败', 'Failed'), tone: 'failed' };
+  if (material.status === 'pending') return { label: t('处理中', 'Pending'), tone: 'pending' };
+  if (material.error?.toLowerCase().startsWith('warning:')) {
+    return { label: t('警告', 'Warning'), tone: 'warning' };
+  }
+  return { label: t('就绪', 'Ready'), tone: 'ready' };
+}
+
+function materialStatusStyle(tokens: ThemeTokens, tone: 'ready' | 'pending' | 'failed' | 'warning') {
+  return {
+    ready: { background: tokens.successSoft, color: tokens.success },
+    pending: { background: tokens.infoSoft, color: tokens.info },
+    failed: { background: tokens.dangerSoft, color: tokens.danger },
+    warning: { background: tokens.warningSoft, color: tokens.warning },
+  }[tone];
+}
+
 export function TutorSidebar({
   sidebarOpen,
   sidebarWidth,
@@ -111,6 +137,9 @@ export function TutorSidebar({
   materials,
   selectedMaterialIds,
   isUploadingMaterial,
+  isRefreshingMaterials,
+  isReingestingMaterial,
+  materialPollingExpired,
   materialError,
   loadError,
   historyLoadError,
@@ -136,6 +165,8 @@ export function TutorSidebar({
   onCustomPromptChange,
   onMaterialUpload,
   onToggleMaterialSelection,
+  onRefreshMaterials,
+  onReingestMaterial,
   onToggleTimer,
   onResetTimer,
   onStartNextRound,
@@ -293,9 +324,22 @@ export function TutorSidebar({
                 <BookOpen className="h-4 w-4 shrink-0" />
                 {t('学习资料', 'Study materials')}
               </span>
-              <span className="text-xs" style={{ color: tokens.textMuted }}>
-                {selectedMaterialIds.length}/{materials.length}
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onRefreshMaterials}
+                  disabled={isRefreshingMaterials}
+                  className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-[var(--ai-hover-surface)] disabled:opacity-50"
+                  aria-label={t('刷新资料状态', 'Refresh material status')}
+                  title={t('刷新资料状态', 'Refresh material status')}
+                  style={{ color: tokens.textMuted }}
+                >
+                  <RotateCcw className={`h-3.5 w-3.5 ${isRefreshingMaterials ? 'animate-spin' : ''}`} />
+                </button>
+                <span className="text-xs" style={{ color: tokens.textMuted }}>
+                  {selectedMaterialIds.length}/{materials.length}
+                </span>
+              </div>
             </div>
             <input
               ref={materialInputRef}
@@ -324,28 +368,66 @@ export function TutorSidebar({
 
             {materials.length > 0 ? (
               <div className="mt-2 max-h-36 space-y-1 overflow-y-auto">
-                {materials.map((material) => (
-                  <label
-                    key={material.id}
-                    className="flex min-w-0 items-center gap-2 rounded-md px-1 py-1 text-xs hover:bg-[var(--ai-hover-surface)]"
-                    style={{ color: tokens.textSecondary }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedMaterialIds.includes(material.id)}
-                      onChange={() => onToggleMaterialSelection(material.id)}
-                      className="h-3.5 w-3.5 shrink-0"
-                    />
-                    <FileText
-                      className="h-3.5 w-3.5 shrink-0"
+                {materials.map((material) => {
+                  const status = materialStatusCopy(material, t);
+                  const statusStyle = materialStatusStyle(tokens, status.tone);
+                  const disabled = material.status !== 'ready' && status.tone !== 'warning';
+                  const errorText = material.error?.replace(/^warning:\s*/i, '');
+                  return (
+                    <div
+                      key={material.id}
+                      className="rounded-md px-1 py-1 text-xs hover:bg-[var(--ai-hover-surface)]"
                       style={{ color: tokens.textSecondary }}
-                    />
-                    <span className="min-w-0 flex-1 truncate">{material.filename}</span>
-                    <span className="shrink-0" style={{ color: tokens.textMuted }}>
-                      {material.chunk_count}
-                    </span>
-                  </label>
-                ))}
+                    >
+                      <label className="flex min-w-0 items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedMaterialIds.includes(material.id)}
+                          onChange={() => onToggleMaterialSelection(material.id)}
+                          disabled={disabled}
+                          className="h-3.5 w-3.5 shrink-0 disabled:opacity-50"
+                        />
+                        <FileText
+                          className="h-3.5 w-3.5 shrink-0"
+                          style={{ color: tokens.textSecondary }}
+                        />
+                        <span className="min-w-0 flex-1 truncate" title={material.filename}>
+                          {material.filename}
+                        </span>
+                        <span
+                          className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                          style={statusStyle}
+                        >
+                          {status.label}
+                        </span>
+                        <span className="shrink-0 tabular-nums" style={{ color: tokens.textMuted }}>
+                          {material.chunk_count}
+                        </span>
+                      </label>
+                      {errorText && (
+                        <div className="mt-1 pl-8" style={{ color: statusStyle.color }}>
+                          <p className="break-words">{errorText}</p>
+                          {material.status === 'failed' && (
+                            <button
+                              type="button"
+                              onClick={() => onReingestMaterial(material.id)}
+                              disabled={isReingestingMaterial}
+                              className="mt-1 inline-flex items-center gap-1 rounded-md px-2 py-1 font-medium hover:bg-[var(--ai-hover-surface)] disabled:opacity-50"
+                              style={{ background: tokens.inputSurface, color: tokens.textPrimary }}
+                            >
+                              {isReingestingMaterial ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <RotateCcw className="h-3 w-3" />
+                              )}
+                              {t('重新处理', 'Retry ingest')}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="mt-2 text-xs leading-5" style={{ color: tokens.textMuted }}>
@@ -353,6 +435,23 @@ export function TutorSidebar({
                   '支持 .txt / .md / .docx / .pdf / .epub',
                   'Supports .txt / .md / .docx / .pdf / .epub',
                 )}
+              </div>
+            )}
+
+            {materialPollingExpired && (
+              <div
+                className="mt-2 flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs"
+                style={{ background: tokens.infoSoft, color: tokens.info }}
+              >
+                <span>{t('自动刷新已暂停', 'Auto refresh paused')}</span>
+                <button
+                  type="button"
+                  onClick={onRefreshMaterials}
+                  className="rounded-md px-2 py-0.5 font-medium hover:bg-[var(--ai-hover-surface)]"
+                  style={{ background: tokens.inputSurface, color: tokens.textPrimary }}
+                >
+                  {t('刷新', 'Refresh')}
+                </button>
               </div>
             )}
 

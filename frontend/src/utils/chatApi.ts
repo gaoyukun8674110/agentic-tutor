@@ -262,6 +262,16 @@ export async function uploadStudyMaterial(
   return apiUpload<StudyMaterial>('/api/materials/upload', formData, options);
 }
 
+export async function reingestStudyMaterial(
+  materialId: number,
+  options?: ApiRequestOptions,
+): Promise<StudyMaterial> {
+  return apiFetch<StudyMaterial>(`/api/materials/${materialId}/reingest`, {
+    ...options,
+    method: 'POST',
+  });
+}
+
 export async function searchStudyMaterials(
   query: string,
   materialIds?: number[],

@@ -246,6 +246,9 @@ export function TutorChatWorkspace({
           materials={materials.materials}
           selectedMaterialIds={materials.selectedMaterialIds}
           isUploadingMaterial={materials.isUploadingMaterial}
+          isRefreshingMaterials={materials.isRefreshingMaterials}
+          isReingestingMaterial={materials.isReingestingMaterial}
+          materialPollingExpired={materials.materialPollingExpired}
           materialError={materials.materialError}
           loadError={loadError}
           historyLoadError={historyLoadError}
@@ -271,6 +274,8 @@ export function TutorChatWorkspace({
           onCustomPromptChange={chat.setCustomPrompt}
           onMaterialUpload={materials.handleMaterialUpload}
           onToggleMaterialSelection={materials.toggleMaterialSelection}
+          onRefreshMaterials={materials.refreshMaterials}
+          onReingestMaterial={materials.reingestMaterial}
           onToggleTimer={toggleTimer}
           onResetTimer={resetTimer}
           onStartNextRound={startNextRound}

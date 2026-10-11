@@ -72,6 +72,19 @@ def delete_material(
     return service.delete_material(material_id, user_id=current_user.username)
 
 
+@router.post("/{material_id}/reingest", response_model=dict, status_code=202)
+def reingest_material(
+    material_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    service = MaterialService(db)
+    material = service.prepare_material_reingest(material_id, user_id=current_user.username)
+    background_tasks.add_task(ingest_material_background, int(material["id"]))
+    return material
+
+
 @router.get("", response_model=dict)
 def list_materials(
     db: Session = Depends(get_db),

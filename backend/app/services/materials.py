@@ -572,6 +572,23 @@ class MaterialService:
             self.db.commit()
             raise
 
+    def prepare_material_reingest(self, material_id: int, user_id: str | None = None) -> dict[str, Any]:
+        material = self.db.query(StudyMaterial).filter(StudyMaterial.id == material_id).one_or_none()
+        if material is None:
+            raise api_error(404, "material_not_found", f"Material {material_id} not found")
+        if user_id is not None and material.user_id is not None and material.user_id != user_id:
+            raise api_error(404, "material_not_found", f"Material {material_id} not found")
+
+        self.db.query(StudyMaterialChunk).filter(StudyMaterialChunk.material_id == material.id).delete()
+        material.status = "pending"
+        material.error = None
+        material.char_count = 0
+        material.chunk_count = 0
+        material.updated_at = datetime.now().isoformat()
+        self.db.commit()
+        self.db.refresh(material)
+        return self._material_payload(material)
+
     def delete_material(self, material_id: int, user_id: str | None = None) -> dict[str, Any]:
         material = self.db.query(StudyMaterial).filter(StudyMaterial.id == material_id).one_or_none()
         if material is None:
