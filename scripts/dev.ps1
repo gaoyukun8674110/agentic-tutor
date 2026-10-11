@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 
 $Root = Split-Path -Parent $PSScriptRoot
 
-Write-Host 'Starting backend at http://localhost:8000'
+Write-Host 'Starting backend at http://localhost:8001'
 Start-Process powershell -WindowStyle Hidden -ArgumentList @(
     '-NoExit',
     '-Command',
