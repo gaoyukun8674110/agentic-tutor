@@ -34,6 +34,12 @@ npm install
 npm run dev
 ```
 
+Or start a no-key local stack with deterministic embeddings and mocked chat:
+
+```powershell
+docker compose -f docker-compose.dev.yml up --build
+```
+
 Defaults:
 
 - Backend: `http://localhost:8001`
@@ -41,6 +47,7 @@ Defaults:
 - Frontend API base: `VITE_API_BASE_URL`, defaulting to `http://localhost:8001`
 - Database: PostgreSQL + pgvector, default `postgresql+psycopg://tutor:tutor@localhost:55432/tutor`
 - RAG embeddings use `RAG_EMBEDDING_API_KEY` and `RAG_EMBEDDING_BASE_URL=https://api.openai.com/v1`, independent of chat provider settings.
+- `docker-compose.dev.yml` sets `RAG_EMBEDDING_MODE=hash` and `E2E_MOCK_LLM=1`, so it does not require real embedding or LLM keys.
 - Local migrations may create a demo account for development. Replace or disable any seeded demo credentials before exposing a deployment.
 - Auth transport: short-lived JWT access tokens in `Authorization: Bearer ...`, plus an HttpOnly refresh cookie scoped to `/api/auth`.
 
