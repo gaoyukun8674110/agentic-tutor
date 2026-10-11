@@ -115,6 +115,7 @@ export interface TutorChatResponse {
   credential_source?: 'user' | 'global' | 'local';
   credential_fingerprint?: string | null;
   agent_path?: string[];
+  used_tools?: string[];
   diagnosis?: ChatDiagnosis | null;
 }
 

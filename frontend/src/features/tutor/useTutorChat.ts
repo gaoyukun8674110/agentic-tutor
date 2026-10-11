@@ -322,6 +322,7 @@ export function useTutorChat({
             mapped[lastAssistantIndex] = {
               ...mapped[lastAssistantIndex],
               diagnosis: response.diagnosis ?? null,
+              usedTools: response.used_tools ?? [],
             };
           }
           dispatch({
@@ -344,6 +345,7 @@ export function useTutorChat({
                   credentialSource: response.credential_source,
                   credentialFingerprint: response.credential_fingerprint,
                   diagnosis: response.diagnosis ?? null,
+                  usedTools: response.used_tools ?? [],
                 },
               ],
             },
