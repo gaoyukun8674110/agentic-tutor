@@ -5,6 +5,7 @@ import {
   fetchLlmCredentials,
   patchLlmCredential,
   saveLlmCredential,
+  testLlmCredential,
 } from './llmCredentialsApi';
 
 describe('llmCredentialsApi', () => {
@@ -70,5 +71,15 @@ describe('llmCredentialsApi', () => {
     expect(String(fetchSpy.mock.calls[0][0])).toContain('/api/llm/credentials');
     expect(String(fetchSpy.mock.calls[1][0])).toContain('/api/llm/credentials/openai');
     expect(fetchSpy.mock.calls[1][1]?.method).toBe('DELETE');
+  });
+
+  it('tests provider credentials through the validation endpoint', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+
+    await expect(testLlmCredential('openai')).resolves.toEqual({ ok: true });
+    expect(String(fetchSpy.mock.calls[0][0])).toContain('/api/llm/credentials/openai/test');
+    expect(fetchSpy.mock.calls[0][1]?.method).toBe('POST');
   });
 });
