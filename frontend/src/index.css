@@ -18,28 +18,29 @@
   --ai-serif: 'Noto Serif SC', 'Songti SC', 'Georgia', serif;
   --ai-sans: 'Inter', 'Noto Sans SC', 'Segoe UI', sans-serif;
 
-  --ai-page-gradient: linear-gradient(180deg, #f1ece1 0%, #ebe4d6 100%);
+  --ai-page-gradient: linear-gradient(180deg, #bfe1fb 0%, #eaf4fe 100%);
+  --ai-page-top: #bfe1fb;
   --ai-overlay-gradient:
-    radial-gradient(circle at 82% -6%, rgba(94, 122, 110, 0.08), transparent 46%),
-    radial-gradient(circle at 4% 108%, rgba(176, 141, 87, 0.06), transparent 42%);
-  --ai-surface: #fbf8f1;
-  --ai-surface-muted: #f4efe4;
-  --ai-surface-accent: #ebe4d5;
-  --ai-surface-elevated: #fdfbf6;
-  --ai-input-surface: #fdfbf6;
-  --ai-hover-surface: #ece5d6;
-  --ai-disabled-surface: #e3dccb;
-  --ai-border-soft: rgba(60, 66, 60, 0.14);
-  --ai-border-strong: rgba(60, 66, 60, 0.26);
-  --ai-border-subtle: rgba(60, 66, 60, 0.08);
-  --ai-text-primary: #20242a;
-  --ai-text-secondary: #4b4f56;
-  --ai-text-muted: #7c8088;
-  --ai-text-inverted: #f3efe6;
-  --ai-disabled-text: #a9a99e;
-  --ai-placeholder-text: #9a9a90;
-  --ai-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 14px 40px rgba(70, 62, 40, 0.09);
-  --ai-shadow-soft: 0 6px 20px rgba(70, 62, 40, 0.07);
+    radial-gradient(circle at 80% -6%, rgba(255,255,255,0.55), transparent 46%),
+    radial-gradient(circle at 6% 108%, rgba(255,255,255,0.4), transparent 42%);
+  --ai-surface: #ffffff;
+  --ai-surface-muted: #eef5fd;
+  --ai-surface-accent: #e2eefb;
+  --ai-surface-elevated: #ffffff;
+  --ai-input-surface: #ffffff;
+  --ai-hover-surface: #e2eefb;
+  --ai-disabled-surface: #d6e4f2;
+  --ai-border-soft: rgba(22, 51, 77, 0.14);
+  --ai-border-strong: rgba(22, 51, 77, 0.24);
+  --ai-border-subtle: rgba(22, 51, 77, 0.08);
+  --ai-text-primary: #16334d;
+  --ai-text-secondary: #3f5a72;
+  --ai-text-muted: #6d8299;
+  --ai-text-inverted: #f2f8ff;
+  --ai-disabled-text: #9fb2c4;
+  --ai-placeholder-text: #92a6ba;
+  --ai-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 14px 40px rgba(31, 74, 117, 0.12);
+  --ai-shadow-soft: 0 6px 20px rgba(31, 74, 117, 0.1);
   --ai-accent-primary: #2f6690;
   --ai-accent-primary-soft: #dce9f5;
   --ai-accent-secondary: #b08d57;
@@ -52,18 +53,18 @@
   --ai-danger-soft: #ecd9d3;
   --ai-info: #2f6690;
   --ai-info-soft: #dce9f5;
-  --ai-chart-grid: #ddd5c4;
-  --ai-chart-axis: #c1b8a4;
-  --ai-chart-tooltip-bg: rgba(251, 248, 241, 0.97);
+  --ai-chart-grid: #cfe0f1;
+  --ai-chart-axis: #a9c2db;
+  --ai-chart-tooltip-bg: rgba(255, 255, 255, 0.97);
   --ai-chat-user-bubble: #16334d;
   --ai-chat-user-border: #16334d;
   --ai-chat-user-text: #f2f8ff;
-  --ai-chat-assistant-bubble: #fbf8f1;
-  --ai-chat-assistant-border: #ddd5c4;
-  --ai-chat-assistant-text: #20242a;
-  --ai-source-surface: #f4efe4;
-  --ai-source-border: #ddd5c4;
-  --ai-source-text: #20242a;
+  --ai-chat-assistant-bubble: #ffffff;
+  --ai-chat-assistant-border: #d7e6f5;
+  --ai-chat-assistant-text: #16334d;
+  --ai-source-surface: #eef5fd;
+  --ai-source-border: #d7e6f5;
+  --ai-source-text: #16334d;
   --ai-code-surface: #20242a;
   --ai-code-text: #f1efe6;
   --ai-primary-action-gradient: linear-gradient(135deg, #002b42 0%, #1b4668 100%);
@@ -73,35 +74,45 @@
   --ai-seal: #9e4a3c;
   --ai-seal-soft: #ecd9d3;
   --ai-seal-wash: #f6ece8;
+  --ai-brand-tile: #002b42;
+  --ai-brand-glyph: #e9f5ff;
+  --ai-brand-ring: rgba(233, 245, 255, 0.5);
+  --ai-brand-shadow: 0 6px 16px rgba(0, 43, 66, 0.28);
+  --ai-wall-panel: rgba(255, 255, 255, 0.72);
+  --ai-wall-border: rgba(22, 51, 77, 0.16);
+  --ai-wall-glow: rgba(31, 110, 170, 0.18);
+  --ai-wall-title: #002b42;
+  --ai-wall-tick: #3f5a72;
 
   font-family: var(--ai-sans);
   color: var(--ai-text-primary);
-  background-color: #f1ece1;
+  background-color: #bfe1fb;
 }
 
 body[data-theme='dark'] {
-  --ai-page-gradient: linear-gradient(180deg, #14171b 0%, #191d22 100%);
+  --ai-page-gradient: linear-gradient(180deg, #04121f 0%, #0a2744 100%);
+  --ai-page-top: #04121f;
   --ai-overlay-gradient:
-    radial-gradient(circle at 82% -4%, rgba(122, 156, 140, 0.08), transparent 46%),
-    radial-gradient(circle at 4% 108%, rgba(176, 141, 87, 0.06), transparent 42%);
-  --ai-surface: #20252b;
-  --ai-surface-muted: #1b2026;
-  --ai-surface-accent: #262c33;
-  --ai-surface-elevated: #242a31;
-  --ai-input-surface: #1a1f24;
-  --ai-hover-surface: #2b323a;
-  --ai-disabled-surface: #2a3037;
-  --ai-border-soft: rgba(196, 206, 190, 0.12);
-  --ai-border-strong: rgba(196, 206, 190, 0.22);
-  --ai-border-subtle: rgba(196, 206, 190, 0.07);
-  --ai-text-primary: #e7e3d6;
-  --ai-text-secondary: #b3b0a2;
-  --ai-text-muted: #85837a;
-  --ai-text-inverted: #14171b;
-  --ai-disabled-text: #64645b;
-  --ai-placeholder-text: #74736a;
-  --ai-shadow: 0 18px 56px rgba(0, 0, 0, 0.5);
-  --ai-shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.38);
+    radial-gradient(circle at 82% -4%, rgba(90,140,200,0.1), transparent 46%),
+    radial-gradient(circle at 4% 108%, rgba(120,90,160,0.07), transparent 42%);
+  --ai-surface: #0f2740;
+  --ai-surface-muted: #0c2036;
+  --ai-surface-accent: #15314c;
+  --ai-surface-elevated: #122b46;
+  --ai-input-surface: #0a1f33;
+  --ai-hover-surface: #163a5c;
+  --ai-disabled-surface: #13293f;
+  --ai-border-soft: rgba(150, 190, 230, 0.14);
+  --ai-border-strong: rgba(150, 190, 230, 0.26);
+  --ai-border-subtle: rgba(150, 190, 230, 0.08);
+  --ai-text-primary: #e8f1fb;
+  --ai-text-secondary: #aac2d8;
+  --ai-text-muted: #7792ab;
+  --ai-text-inverted: #04121f;
+  --ai-disabled-text: #5a748c;
+  --ai-placeholder-text: #6a8299;
+  --ai-shadow: 0 18px 56px rgba(0, 0, 0, 0.55);
+  --ai-shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.4);
   --ai-accent-primary: #8cbfe6;
   --ai-accent-primary-soft: rgba(140, 191, 230, 0.16);
   --ai-accent-secondary: #cba36a;
@@ -114,26 +125,35 @@ body[data-theme='dark'] {
   --ai-danger-soft: rgba(205, 122, 104, 0.16);
   --ai-info: #8cbfe6;
   --ai-info-soft: rgba(140, 191, 230, 0.16);
-  --ai-chart-grid: #2c333b;
-  --ai-chart-axis: #3b434c;
-  --ai-chart-tooltip-bg: rgba(32, 37, 43, 0.97);
+  --ai-chart-grid: #163a5c;
+  --ai-chart-axis: #24496c;
+  --ai-chart-tooltip-bg: rgba(15, 39, 64, 0.97);
   --ai-chat-user-bubble: #1b3d5e;
   --ai-chat-user-border: rgba(140, 191, 230, 0.32);
   --ai-chat-user-text: #e8f1fb;
-  --ai-chat-assistant-bubble: #20252b;
-  --ai-chat-assistant-border: rgba(196, 206, 190, 0.14);
-  --ai-chat-assistant-text: #e7e3d6;
-  --ai-source-surface: rgba(203, 163, 106, 0.09);
-  --ai-source-border: rgba(203, 163, 106, 0.2);
-  --ai-source-text: #e7e3d6;
-  --ai-code-surface: #0e1216;
-  --ai-code-text: #e7e3d6;
+  --ai-chat-assistant-bubble: #0f2740;
+  --ai-chat-assistant-border: rgba(150, 190, 230, 0.16);
+  --ai-chat-assistant-text: #e8f1fb;
+  --ai-source-surface: rgba(90, 140, 200, 0.1);
+  --ai-source-border: rgba(90, 140, 200, 0.22);
+  --ai-source-text: #e8f1fb;
+  --ai-code-surface: #06131f;
+  --ai-code-text: #e8f1fb;
   --ai-primary-action-gradient: linear-gradient(135deg, #cfe4f7 0%, #a7c8e4 100%);
   --ai-progress-gradient: linear-gradient(90deg, #6fa7d6 0%, #8cbfe6 100%);
 
   --ai-seal: #cd7a68;
   --ai-seal-soft: rgba(205, 122, 104, 0.18);
   --ai-seal-wash: rgba(205, 122, 104, 0.1);
+  --ai-brand-tile: #cfe4f7;
+  --ai-brand-glyph: #002b42;
+  --ai-brand-ring: rgba(0, 43, 66, 0.35);
+  --ai-brand-shadow: 0 6px 16px rgba(2, 18, 31, 0.5);
+  --ai-wall-panel: rgba(10, 39, 68, 0.72);
+  --ai-wall-border: rgba(150, 190, 230, 0.22);
+  --ai-wall-glow: rgba(127, 196, 255, 0.3);
+  --ai-wall-title: #e8f1fb;
+  --ai-wall-tick: #aac2d8;
 }
 
 * {
@@ -264,4 +284,125 @@ select {
 
 .math-message-user .katex-display {
   text-align: left;
+}
+
+.liquid-glass-hero {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Starry / blue-sky background layer: night twinkles, day drifts; static disables motion */
+.sky-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sky-bg__stars,
+.sky-bg__clouds {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+body[data-theme='dark'] .sky-bg__stars {
+  opacity: 1;
+}
+
+body[data-theme='dark'] .sky-bg__clouds {
+  opacity: 0;
+}
+
+body:not([data-theme='dark']) .sky-bg__clouds {
+  opacity: 1;
+}
+
+body:not([data-theme='dark']) .sky-bg__stars {
+  opacity: 0;
+}
+
+.sky-bg__stars {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(232, 241, 251, 0.9), transparent),
+    radial-gradient(1px 1px at 70% 20%, rgba(232, 241, 251, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 40% 70%, rgba(232, 241, 251, 0.85), transparent),
+    radial-gradient(1px 1px at 85% 60%, rgba(232, 241, 251, 0.6), transparent),
+    radial-gradient(1px 1px at 55% 45%, rgba(232, 241, 251, 0.75), transparent),
+    radial-gradient(1.5px 1.5px at 10% 80%, rgba(232, 241, 251, 0.7), transparent),
+    radial-gradient(1px 1px at 90% 90%, rgba(232, 241, 251, 0.65), transparent);
+  background-repeat: repeat;
+  background-size: 420px 420px;
+  animation: sky-twinkle 4.5s ease-in-out infinite;
+}
+
+.sky-bg__clouds {
+  background-image:
+    radial-gradient(120px 60px at 20% 30%, rgba(255, 255, 255, 0.85), transparent 70%),
+    radial-gradient(160px 70px at 65% 55%, rgba(255, 255, 255, 0.7), transparent 70%),
+    radial-gradient(100px 50px at 85% 25%, rgba(255, 255, 255, 0.6), transparent 70%);
+  background-repeat: no-repeat;
+  animation: sky-drift 26s linear infinite alternate;
+}
+
+@keyframes sky-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes sky-drift {
+  from {
+    transform: translateX(-24px);
+  }
+  to {
+    transform: translateX(24px);
+  }
+}
+
+.sky-bg--static .sky-bg__stars,
+.sky-bg--static .sky-bg__clouds {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-bg__stars,
+  .sky-bg__clouds {
+    animation: none;
+  }
 }
