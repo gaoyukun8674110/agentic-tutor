@@ -1,25 +1,20 @@
-import { useCallback, type ElementType } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Brain, Target, Zap } from 'lucide-react';
+import { Brain, Clock, Flame, Target, Timer, TrendingUp, Zap } from 'lucide-react';
+
+import { useAuth } from '../auth/AuthContext';
+import { DataWall, KpiCell, WallPanel } from '../components/DataWall';
 import { PomodoroTimer } from '../components/PomodoroTimer';
-import { StudyCalendar } from '../components/StudyCalendar';
+import { SkyBackground } from '../components/SkyBackground';
 import { StudyStats } from '../components/StudyStats';
 import { TodayPlan } from '../components/TodayPlan';
 import { TodayPlanSkills } from '../components/TodayPlanSkills';
 import { TopNavbar } from '../components/TopNavbar';
-import { Button } from '../components/ui/button';
-import { useAuth } from '../auth/AuthContext';
 import { fetchDashboardSummary } from '../utils/dashboardApi';
-import { fetchMastery } from '../utils/studentApi';
 import { cardSurfaceStyle, primaryActionStyle } from '../utils/glassStyles';
 import { useSettings } from '../utils/settings';
-
-interface StatCard {
-  icon: ElementType;
-  label: string;
-  value: string;
-}
+import { fetchMastery } from '../utils/studentApi';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -52,39 +47,13 @@ export function DashboardPage() {
   const totalTasks = todayStats?.total_tasks ?? 0;
   const streakDays = dashboardSummary?.streak_days ?? 0;
   const studyHours = focusMinutes / 60;
-  const stats: StatCard[] = [
-    {
-      icon: BookOpen,
-      label: t('今日学习时长', "Today's study time"),
-      value:
-        studyHours > 0
-          ? language === 'zh'
-            ? `${studyHours.toFixed(1)} 小时`
-            : `${studyHours.toFixed(1)} h`
-          : t('0 小时', '0 h'),
-    },
-    {
-      icon: Target,
-      label: t('Skills mastered', 'Skills mastered'),
-      value: `${masteredCount} / ${masteries.length}`,
-    },
-    {
-      icon: Brain,
-      label: t('连续学习', 'Learning streak'),
-      value:
-        streakDays > 0
-          ? language === 'zh'
-            ? `${streakDays} 天`
-            : `${streakDays} days`
-          : t('0 天', '0 days'),
-    },
-  ];
+  const weekHours = (dashboardSummary?.weekly_data ?? []).reduce((sum, day) => sum + day.hours, 0);
 
   const cardStyle = cardSurfaceStyle(tokens);
+  const ctaStyle = primaryActionStyle(tokens);
   const serif = "'Noto Serif SC', 'Songti SC', 'Georgia', serif";
 
   const dashboardShellClass = 'mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 xl:px-0';
-  const dashboardGridClass = 'grid grid-cols-1 items-start gap-6 lg:grid-cols-3';
 
   const greeting = (() => {
     const hour = new Date().getHours();
@@ -95,36 +64,17 @@ export function DashboardPage() {
     return t('灯下夜读', 'Evening study');
   })();
 
-  const renderStatCard = (item: StatCard) => {
-    const Icon = item.icon;
-
-    return (
-      <div className="min-h-[132px] p-6" style={cardStyle}>
-        <div className="flex h-full items-start justify-between gap-5">
-          <div>
-            <p
-              className="mb-3 text-xs font-semibold uppercase"
-              style={{ color: tokens.textMuted, letterSpacing: '0.14em' }}
-            >
-              {item.label}
-            </p>
-            <p
-              className="tabular-nums"
-              style={{
-                color: tokens.textPrimary,
-                fontFamily: serif,
-                fontWeight: 700,
-                fontSize: 32,
-              }}
-            >
-              {item.value}
-            </p>
-          </div>
-          <Icon className="h-6 w-6 shrink-0" style={{ color: tokens.accentPrimary }} />
-        </div>
-      </div>
-    );
-  };
+  const dashboardAction = (
+    <button
+      data-testid="dashboard-cta"
+      onClick={() => navigate('/tutor')}
+      className="flex h-11 items-center justify-center gap-2 rounded-xl px-6 font-medium transition-all duration-200 hover:-translate-y-[1px] active:scale-[0.98]"
+      style={{ ...ctaStyle, boxShadow: tokens.shadowSoft }}
+    >
+      <Zap className="h-5 w-5" />
+      {t('进入今日学习', "Enter today's study")}
+    </button>
+  );
 
   return (
     <div
@@ -133,149 +83,140 @@ export function DashboardPage() {
     >
       <div className="fixed inset-0" style={{ background: tokens.pageGradient }} />
       <div className="fixed inset-0" style={{ background: tokens.overlayGradient }} />
+      <SkyBackground variant="animated" />
       <TopNavbar />
 
       <div className="relative">
         <div className={dashboardShellClass}>
-          {/* 书院 hero —— 题眼 + agent 朱批 */}
-          <section className="mb-8 grid grid-cols-1 items-end gap-8 lg:grid-cols-[1.3fr_1fr]">
-            <div>
-              <p
-                className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase"
-                style={{ color: tokens.accentPrimary, letterSpacing: '0.2em' }}
-              >
-                <span
-                  aria-hidden
-                  style={{
-                    display: 'inline-block',
-                    width: 22,
-                    height: 1,
-                    background: tokens.accentPrimary,
-                  }}
-                />
-                {t('今日', 'Today')} · {greeting}
-              </p>
-              <h2
-                className="mb-3"
-                style={{
-                  fontFamily: serif,
-                  fontWeight: 700,
-                  fontSize: 34,
-                  lineHeight: 1.25,
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {t('墨已研好，', 'The ink is ready — ')}
-                <span style={{ color: tokens.accentPrimary }}>
-                  {user?.username ?? t('学习者', 'let us')}
-                </span>
-                {t('，今日续起。', ' continue where you left off.')}
-              </h2>
-              <p className="max-w-xl text-sm" style={{ color: tokens.textSecondary }}>
-                {t(
-                  '我已复盘你近期的练习，为你备好今日该补的知识点。随时可以开卷。',
-                  'I have reviewed your recent practice and prepared today’s focus. Open the book whenever you are ready.',
-                )}
-              </p>
-            </div>
-
-            {/* agent 诊断朱印卡 —— signature */}
-            <aside className="relative p-6" style={cardStyle}>
-              <span
-                className="absolute grid place-items-center text-center"
-                style={{
-                  top: -14,
-                  right: 20,
-                  width: 52,
-                  height: 52,
-                  borderRadius: '50%',
-                  border: '2px solid var(--ai-seal)',
-                  color: 'var(--ai-seal)',
-                  background: tokens.surface,
-                  transform: 'rotate(-8deg)',
-                  fontFamily: serif,
-                  fontWeight: 700,
-                  fontSize: 14,
-                  lineHeight: 1.1,
-                }}
-                aria-hidden
-              >
-                {t('诊断\n已落', 'seen')
-                  .split('\n')
-                  .map((line, index) => (
-                    <span key={index} style={{ display: 'block' }}>
-                      {line}
-                    </span>
-                  ))}
-              </span>
-              <p
-                className="mb-2 text-xs uppercase"
-                style={{ color: tokens.textMuted, letterSpacing: '0.16em' }}
-              >
-                {t('诊断 · Diagnostician', 'Diagnostician')}
-              </p>
-              <p className="text-sm" style={{ color: tokens.textPrimary, lineHeight: 1.6 }}>
-                {t('本周共专注 ', 'This week you focused for ')}
-                <b style={{ color: 'var(--ai-seal)', fontWeight: 600 }}>
-                  {studyHours > 0
+          <DataWall
+            title={t('砚思 · 数据总览', 'Inkwell · Data Overview')}
+            subtitle={`${t('今日', 'Today')} · ${greeting}`}
+            actions={dashboardAction}
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-6">
+              <KpiCell
+                label={t('今日时长', "Today's time")}
+                value={
+                  studyHours > 0
                     ? language === 'zh'
                       ? `${studyHours.toFixed(1)} 小时`
-                      : `${studyHours.toFixed(1)}h`
-                    : t('尚未开始', 'not yet started')}
-                </b>
-                {streakDays > 0
-                  ? t(
-                      `，已连续 ${streakDays} 天。保持这个节奏。`,
-                      `, ${streakDays} days in a row. Keep this rhythm.`,
-                    )
-                  : t('。今日迈出第一步。', '. Take the first step today.')}
-              </p>
-            </aside>
-          </section>
-
-          <div className={dashboardGridClass}>
-            <section className="space-y-6">
-              {renderStatCard(stats[0])}
-              <PomodoroTimer
-                userId={user?.username ?? ''}
-                persistedCompletedPomodoros={completedPomodoros}
-                persistedFocusMinutes={focusMinutes}
-                onPomodoroLogged={refreshDashboard}
+                      : `${studyHours.toFixed(1)} h`
+                    : t('0 小时', '0 h')
+                }
+                icon={Clock}
               />
-            </section>
-
-            <section className="space-y-6">
-              {renderStatCard(stats[1])}
-              <TodayPlanSkills username={user?.username ?? ''} />
-              <TodayPlan tasks={dashboardSummary?.tasks ?? []} onDataChange={refreshDashboard} />
-            </section>
-
-            <section className="space-y-6">
-              {renderStatCard(stats[2])}
-              <StudyStats
-                focusMinutes={focusMinutes}
-                completedPomodoros={completedPomodoros}
-                completedTasks={completedTasks}
-                totalTasks={totalTasks}
-                weeklyData={dashboardSummary?.weekly_data ?? []}
+              <KpiCell
+                label={t('今日任务', "Today's tasks")}
+                value={`${completedTasks} / ${totalTasks}`}
+                icon={Target}
               />
-            </section>
-          </div>
-
-          <div className="mt-6 w-full">
-            <Button
-              onClick={() => navigate('/tutor')}
-              className="w-full py-6 font-medium transition-all duration-200"
-              style={primaryActionStyle(tokens)}
-            >
-              <Zap className="h-5 w-5" />
-              {t('进入今日学习', "Enter today's study")}
-            </Button>
-
-            <div className="mt-6">
-              <StudyCalendar events={dashboardSummary?.calendar_events ?? []} />
+              <KpiCell
+                label={t('番茄轮次', 'Pomodoros')}
+                value={`${completedPomodoros}`}
+                icon={Timer}
+              />
+              <KpiCell
+                label={t('连续天数', 'Streak')}
+                value={streakDays > 0 ? `${streakDays} 天` : t('0 天', '0 days')}
+                icon={Flame}
+              />
+              <KpiCell
+                label={t('掌握技能', 'Skills mastered')}
+                value={`${masteredCount} / ${masteries.length}`}
+                icon={Brain}
+              />
+              <KpiCell
+                label={t('本周时长', 'This week')}
+                value={language === 'zh' ? `${weekHours.toFixed(1)} 小时` : `${weekHours.toFixed(1)} h`}
+                icon={TrendingUp}
+              />
             </div>
-          </div>
+
+            <WallPanel title={t('今日计划 · 技能', 'Today · Skills')} icon={Target} span={2}>
+              <div className="mt-4 space-y-6">
+                <TodayPlanSkills username={user?.username ?? ''} />
+                <TodayPlan tasks={dashboardSummary?.tasks ?? []} onDataChange={refreshDashboard} />
+              </div>
+            </WallPanel>
+
+            <div className="flex flex-col gap-4 lg:col-span-1">
+              <WallPanel title={t('番茄钟', 'Pomodoro')} icon={Timer}>
+                <div className="mt-4">
+                  <PomodoroTimer
+                    userId={user?.username ?? ''}
+                    persistedCompletedPomodoros={completedPomodoros}
+                    persistedFocusMinutes={focusMinutes}
+                    onPomodoroLogged={refreshDashboard}
+                    variant="embedded"
+                  />
+                </div>
+              </WallPanel>
+
+              <aside className="relative p-6" style={cardStyle}>
+                <span
+                  className="absolute grid place-items-center text-center"
+                  style={{
+                    top: -14,
+                    right: 20,
+                    width: 52,
+                    height: 52,
+                    borderRadius: '50%',
+                    border: '2px solid var(--ai-seal)',
+                    color: 'var(--ai-seal)',
+                    background: tokens.surface,
+                    transform: 'rotate(-8deg)',
+                    fontFamily: serif,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    lineHeight: 1.1,
+                  }}
+                  aria-hidden
+                >
+                  {t('诊断\n已落', 'seen')
+                    .split('\n')
+                    .map((line, index) => (
+                      <span key={index} style={{ display: 'block' }}>
+                        {line}
+                      </span>
+                    ))}
+                </span>
+                <p
+                  className="mb-2 text-xs uppercase"
+                  style={{ color: tokens.textMuted, letterSpacing: '0.16em' }}
+                >
+                  {t('诊断 · Diagnostician', 'Diagnostician')}
+                </p>
+                <p className="text-sm" style={{ color: tokens.textPrimary, lineHeight: 1.6 }}>
+                  {t('本周共专注 ', 'This week you focused for ')}
+                  <b style={{ color: 'var(--ai-seal)', fontWeight: 600 }}>
+                    {studyHours > 0
+                      ? language === 'zh'
+                        ? `${studyHours.toFixed(1)} 小时`
+                        : `${studyHours.toFixed(1)}h`
+                      : t('尚未开始', 'not yet started')}
+                  </b>
+                  {streakDays > 0
+                    ? t(
+                        `，已连续 ${streakDays} 天。保持这个节奏。`,
+                        `, ${streakDays} days in a row. Keep this rhythm.`,
+                      )
+                    : t('。今日迈出第一步。', '. Take the first step today.')}
+                </p>
+              </aside>
+            </div>
+
+            <WallPanel title={t('学习统计', 'Study stats')} icon={TrendingUp} span={3}>
+              <div className="mt-4">
+                <StudyStats
+                  focusMinutes={focusMinutes}
+                  completedPomodoros={completedPomodoros}
+                  completedTasks={completedTasks}
+                  totalTasks={totalTasks}
+                  weeklyData={dashboardSummary?.weekly_data ?? []}
+                />
+              </div>
+            </WallPanel>
+          </DataWall>
         </div>
       </div>
     </div>
