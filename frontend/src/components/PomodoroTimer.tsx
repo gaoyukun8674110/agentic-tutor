@@ -19,6 +19,7 @@ interface PomodoroTimerProps {
   userId?: string;
   persistedCompletedPomodoros?: number;
   persistedFocusMinutes?: number;
+  variant?: 'card' | 'embedded';
 }
 
 const modeCopy = {
@@ -44,6 +45,7 @@ export function PomodoroTimer({
   onPomodoroLogged,
   persistedCompletedPomodoros,
   persistedFocusMinutes,
+  variant = 'card',
 }: PomodoroTimerProps) {
   const [showSettings, setShowSettings] = useState(false);
   const { state, logVersion, toggleTimer, resetTimer, switchMode, adjustDuration } =
@@ -100,25 +102,27 @@ export function PomodoroTimer({
   const Icon = currentConfig.icon;
   const modeColor =
     state.mode === 'work'
-      ? tokens.accentSecondary
+      ? tokens.accentPrimary
       : state.mode === 'shortBreak'
-        ? tokens.success
-        : tokens.accentPrimary;
+        ? tokens.accentSecondary
+        : tokens.success;
+  const modeSoftColor =
+    state.mode === 'work'
+      ? tokens.accentPrimarySoft
+      : state.mode === 'shortBreak'
+        ? tokens.accentSecondarySoft
+        : tokens.successSoft;
   const displayedCompletedPomodoros = Math.max(
     persistedCompletedPomodoros ?? 0,
     state.completedPomodoros,
   );
   const displayedFocusMinutes = Math.max(persistedFocusMinutes ?? 0, state.focusMinutes);
 
-  const cardStyle = cardSurfaceStyle(tokens);
+  const isEmbedded = variant === 'embedded';
+  const cardStyle = isEmbedded ? {} : cardSurfaceStyle(tokens);
 
   const headerStyle = {
-    background:
-      state.mode === 'work'
-        ? tokens.accentSecondarySoft
-        : state.mode === 'shortBreak'
-          ? tokens.successSoft
-          : tokens.accentPrimarySoft,
+    background: modeSoftColor,
     backdropFilter: 'blur(14px)',
     borderBottom: tokens.borderSoft,
   };
@@ -127,7 +131,9 @@ export function PomodoroTimer({
 
   return (
     <div
-      className="h-full overflow-hidden rounded-2xl shadow-sm transition-all duration-300"
+      className={`h-full overflow-hidden transition-all duration-300 ${
+        isEmbedded ? '' : 'rounded-2xl shadow-sm'
+      }`}
       style={cardStyle}
     >
       <div className="border-b p-6" style={headerStyle}>
@@ -137,7 +143,12 @@ export function PomodoroTimer({
               <Icon className="h-5 w-5" style={{ color: modeColor }} />
             </div>
             <h2 className="text-lg font-medium" style={{ color: modeColor }}>
-              {t('番茄钟', 'Pomodoro')}
+              {isEmbedded
+                ? t(
+                    `今日专注 ${displayedFocusMinutes} 分钟`,
+                    `${displayedFocusMinutes} focused minutes today`,
+                  )
+                : t('番茄钟', 'Pomodoro')}
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -236,14 +247,7 @@ export function PomodoroTimer({
               style={{
                 border: state.mode === item ? tokens.borderStrong : tokens.borderSoft,
                 background: state.mode === item ? tokens.surface : tokens.surfaceMuted,
-                color:
-                  state.mode === item
-                    ? item === 'work'
-                      ? tokens.accentSecondary
-                      : item === 'shortBreak'
-                        ? tokens.success
-                        : tokens.accentPrimary
-                    : tokens.textSecondary,
+                color: state.mode === item ? tokens.textPrimary : tokens.textSecondary,
               }}
             >
               {modeCopy[item][language]}
@@ -275,8 +279,8 @@ export function PomodoroTimer({
                 style={{
                   transition: 'stroke-dashoffset 1s linear',
                   stroke: modeColor,
-                  filter: 'drop-shadow(0 0 8px currentColor)',
                 }}
+                strokeLinecap="round"
               />
             </svg>
 
@@ -297,9 +301,9 @@ export function PomodoroTimer({
         <div className="flex gap-3">
           <button
             onClick={toggleTimer}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r py-3 font-medium transition-all"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-medium transition-all active:scale-[0.98]"
             style={{
-              background: state.mode === 'work' ? tokens.primaryActionGradient : modeColor,
+              background: tokens.primaryActionGradient,
               border: tokens.borderSoft,
               color: tokens.textInverted,
             }}
@@ -325,25 +329,22 @@ export function PomodoroTimer({
           </button>
         </div>
 
-        <div
-          className="mt-4 rounded-2xl p-3"
-          style={{
-            ...controlStyle,
-            background:
-              state.mode === 'work'
-                ? tokens.accentSecondarySoft
-                : state.mode === 'shortBreak'
-                  ? tokens.successSoft
-                  : tokens.accentPrimarySoft,
-          }}
-        >
-          <p className="text-center text-sm tabular-nums" style={{ color: tokens.textSecondary }}>
-            {t(
-              `今日专注 ${displayedFocusMinutes} 分钟`,
-              `${displayedFocusMinutes} focused minutes today`,
-            )}
-          </p>
-        </div>
+        {!isEmbedded && (
+          <div
+            className="mt-4 rounded-2xl p-3"
+            style={{
+              ...controlStyle,
+              background: modeSoftColor,
+            }}
+          >
+            <p className="text-center text-sm tabular-nums" style={{ color: tokens.textSecondary }}>
+              {t(
+                `今日专注 ${displayedFocusMinutes} 分钟`,
+                `${displayedFocusMinutes} focused minutes today`,
+              )}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
