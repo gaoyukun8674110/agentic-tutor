@@ -1,7 +1,6 @@
 import shutil
 from pathlib import Path
 
-import pytest
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas

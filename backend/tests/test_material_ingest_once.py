@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pypdf.errors import PdfStreamError
 
 from app.config import settings
 from app.models.materials import StudyMaterial, StudyMaterialChunk
@@ -71,7 +72,7 @@ def test_ingest_failure_marks_failed(db_session, tmp_path):
     service = service_for(db_session, tmp_path)
     pending = service.create_pending_material_from_path("broken.pdf", path, path.stat().st_size, "application/pdf", "alice")
 
-    with pytest.raises(Exception):
+    with pytest.raises(PdfStreamError):
         service.ingest_material(int(pending["id"]))
 
     material = db_session.query(StudyMaterial).filter_by(id=pending["id"]).one()

@@ -6,7 +6,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.deps import get_current_user
-from app.api.materials import ingest_material_background, router as materials_router
+from app.api.materials import ingest_material_background
+from app.api.materials import router as materials_router
 from app.config import settings
 from app.database import get_db
 from app.models.materials import StudyMaterial

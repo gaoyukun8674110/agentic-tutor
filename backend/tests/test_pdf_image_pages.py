@@ -11,7 +11,6 @@ from app.services.materials import HashEmbeddingProvider, MaterialService, PdfEx
 from tests.auth_helpers import create_test_user
 from tests.pgvector_helpers import make_pgvector_session_factory
 
-
 IMAGE_ONLY_MESSAGE = "此 PDF 无文本层，请开启图片处理（设置 RAG_PDF_IMAGE_MODE=ocr 或 vision 后重新上传）"
 
 
