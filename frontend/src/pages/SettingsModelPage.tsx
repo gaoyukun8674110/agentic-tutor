@@ -10,6 +10,7 @@ import {
   fetchLlmCredentials,
   patchLlmCredential,
   saveLlmCredential,
+  testLlmCredential,
   type UserLLMCredential,
 } from '../utils/llmCredentialsApi';
 import { getUserFacingError } from '../utils/apiClient';
@@ -32,10 +33,10 @@ const emptyForm: ProviderFormState = {
 };
 
 function sourceLabel(provider: ChatProvider, credential?: UserLLMCredential): string {
-  if (credential?.configured) return 'Your key';
-  if (provider.source === 'global') return 'Demo key';
-  if (provider.source === 'local') return 'Local';
-  return 'Not configured';
+  if (credential?.configured || provider.source === 'user') return 'Source: user';
+  if (provider.source === 'global') return 'Source: global';
+  if (provider.source === 'local') return 'Source: local';
+  return 'Source: none';
 }
 
 export function SettingsModelPage() {
@@ -43,6 +44,9 @@ export function SettingsModelPage() {
   const queryClient = useQueryClient();
   const [selectedProviderId, setSelectedProviderId] = useState('linkapi');
   const [forms, setForms] = useState<Record<string, ProviderFormState>>({});
+  const [testResults, setTestResults] = useState<Record<string, { ok: boolean; message: string }>>(
+    {},
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,6 +75,7 @@ export function SettingsModelPage() {
     ? credentialsByProvider.get(selectedProvider.id)
     : undefined;
   const form = selectedProvider ? (forms[selectedProvider.id] ?? emptyForm) : emptyForm;
+  const selectedTestResult = selectedProvider ? testResults[selectedProvider.id] : undefined;
 
   const refreshCredentials = async () => {
     await Promise.all([
@@ -147,6 +152,34 @@ export function SettingsModelPage() {
     onError: (mutationError) => {
       setMessage(null);
       setError(getUserFacingError(mutationError));
+    },
+  });
+
+  const testMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedProvider) return null;
+      return testLlmCredential(selectedProvider.id);
+    },
+    onSuccess: () => {
+      if (!selectedProvider) return;
+      setTestResults((current) => ({
+        ...current,
+        [selectedProvider.id]: {
+          ok: true,
+          message: t('连接测试成功', 'Connection test passed'),
+        },
+      }));
+      setError(null);
+    },
+    onError: (mutationError) => {
+      if (!selectedProvider) return;
+      setTestResults((current) => ({
+        ...current,
+        [selectedProvider.id]: {
+          ok: false,
+          message: getUserFacingError(mutationError),
+        },
+      }));
     },
   });
 
@@ -259,6 +292,17 @@ export function SettingsModelPage() {
                   </div>
                   <div className="flex gap-2">
                     <Button
+                      onClick={() => testMutation.mutate()}
+                      disabled={!selectedProvider || testMutation.isPending}
+                      className="rounded-xl"
+                      style={cardSurfaceStyle(tokens)}
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      {testMutation.isPending
+                        ? t('测试中', 'Testing')
+                        : t('测试连接', 'Test connection')}
+                    </Button>
+                    <Button
                       onClick={() => patchMutation.mutate({ isDefault: true })}
                       disabled={
                         !selectedCredential ||
@@ -282,6 +326,21 @@ export function SettingsModelPage() {
                     </Button>
                   </div>
                 </div>
+
+                {selectedTestResult && (
+                  <div
+                    data-testid="credential-test-result"
+                    className="flex items-start gap-2 rounded-2xl border px-4 py-3 text-sm"
+                    style={statusPanelStyle(tokens, selectedTestResult.ok ? 'success' : 'warning')}
+                  >
+                    {selectedTestResult.ok ? (
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                    ) : (
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                    )}
+                    {selectedTestResult.message}
+                  </div>
+                )}
 
                 <label className="block">
                   <span className="mb-1 block text-sm font-medium">{t('API Key', 'API key')}</span>

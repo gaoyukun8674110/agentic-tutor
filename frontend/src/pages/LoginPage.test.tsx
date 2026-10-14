@@ -86,4 +86,28 @@ describe('LoginPage', () => {
     expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeEnabled();
   });
+
+  it('renders both inkstone brand marks: the hero banner and the login card', () => {
+    renderLoginPage();
+
+    const marks = screen.getAllByTestId('brand-mark');
+    expect(marks).toHaveLength(2);
+
+    const hero = marks.find((m) => m.getAttribute('data-variant') === 'hero');
+    const theme = marks.find((m) => m.getAttribute('data-variant') === 'theme');
+    expect(hero).toBeDefined();
+    expect(theme).toBeDefined();
+  });
+
+  it('renders the login card brand mark with the theme tile token (not the cinnabar seal)', () => {
+    renderLoginPage();
+
+    const theme = screen
+      .getAllByTestId('brand-mark')
+      .find((m) => m.getAttribute('data-variant') === 'theme');
+
+    expect(theme).toBeDefined();
+    expect(theme).toHaveAttribute('data-tile', 'var(--ai-brand-tile)');
+    expect(screen.queryByText('诊断已落')).toBeNull();
+  });
 });

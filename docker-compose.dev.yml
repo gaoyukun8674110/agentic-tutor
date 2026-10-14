@@ -1,0 +1,57 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: tutor
+      POSTGRES_PASSWORD: tutor
+      POSTGRES_DB: tutor
+    ports:
+      - "55432:5432"
+    volumes:
+      - pgvector-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutor -d tutor"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://tutor:tutor@db:5432/tutor
+      DEBUG: "true"
+      LOG_LEVEL: INFO
+      CORS_ORIGINS: '["http://localhost:4173","http://localhost:5173"]'
+      RAG_UPLOAD_DIR: /data/storage/materials
+      RAG_VECTOR_DIM: 1536
+      RAG_HNSW_EF_SEARCH: 40
+      RAG_EMBEDDING_MODE: hash
+      E2E_MOCK_LLM: "1"
+      ALLOW_GLOBAL_LLM_FALLBACK: "true"
+    ports:
+      - "8001:8001"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend-dev-data:/data
+
+  frontend:
+    image: node:22-bookworm-slim
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 4173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8001
+    ports:
+      - "4173:4173"
+    volumes:
+      - ./frontend:/app
+      - frontend-dev-node-modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  pgvector-dev-data:
+  backend-dev-data:
+  frontend-dev-node-modules:

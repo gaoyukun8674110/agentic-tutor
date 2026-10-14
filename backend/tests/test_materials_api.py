@@ -74,17 +74,21 @@ class MaterialsApiTests(unittest.TestCase):
         )
 
     def test_upload_list_and_search_materials(self):
-        with patch("app.api.materials.MaterialService", side_effect=self._material_service):
+        with (
+            patch("app.api.materials.MaterialService", side_effect=self._material_service),
+            patch("app.api.materials.SessionLocal", side_effect=self.SessionLocal),
+        ):
             upload_response = self.client.post(
                 "/api/materials/upload",
                 params={"user_id": "bob"},
                 files={"file": ("probability.txt", b"Bayes theorem uses posterior probability.", "text/plain")},
             )
 
-            self.assertEqual(upload_response.status_code, 200)
+            self.assertEqual(upload_response.status_code, 202)
             material = upload_response.json()
             self.assertEqual(material["filename"], "probability.txt")
             self.assertEqual(material["status"], "pending")
+            self.assertEqual(material["chunk_count"], 0)
             self.assertEqual(material["embedding_mode"], "hash")
 
             list_response = self.client.get("/api/materials", params={"user_id": "bob"})

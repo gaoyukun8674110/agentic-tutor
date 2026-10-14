@@ -51,3 +51,8 @@ AI_TUTOR_AUDIT-*.md
 backend/push.sh
 docs/rag-flow-interactive.html
 repomix-output.xml
+
+.pi-work/
+.playwright-mcp/
+docs/project-full-scan-2026-10-11.md
+

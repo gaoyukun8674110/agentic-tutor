@@ -52,6 +52,15 @@ export interface ThemeTokens {
   codeText: string;
   primaryActionGradient: string;
   progressGradient: string;
+  brandTile: string;
+  brandGlyph: string;
+  brandRing: string;
+  brandShadow: string;
+  wallPanel: string;
+  wallBorder: string;
+  wallGlow: string;
+  wallTitle: string;
+  wallTick: string;
 }
 
 interface SettingsContextValue {
@@ -115,6 +124,15 @@ const cssThemeTokens: ThemeTokens = {
   codeText: cssVar('code-text'),
   primaryActionGradient: cssVar('primary-action-gradient'),
   progressGradient: cssVar('progress-gradient'),
+  brandTile: cssVar('brand-tile'),
+  brandGlyph: cssVar('brand-glyph'),
+  brandRing: cssVar('brand-ring'),
+  brandShadow: cssVar('brand-shadow'),
+  wallPanel: cssVar('wall-panel'),
+  wallBorder: cssVar('wall-border'),
+  wallGlow: cssVar('wall-glow'),
+  wallTitle: cssVar('wall-title'),
+  wallTick: cssVar('wall-tick'),
 };
 
 const themeTokens: Record<ThemeMode, ThemeTokens> = {
@@ -130,8 +148,8 @@ function readStoredLanguage(): Language {
 }
 
 function readStoredTheme(): ThemeMode {
-  if (typeof window === 'undefined') return 'light';
-  return window.localStorage.getItem('ai-tutor-theme') === 'dark' ? 'dark' : 'light';
+  if (typeof window === 'undefined') return 'dark';
+  return window.localStorage.getItem('ai-tutor-theme') === 'light' ? 'light' : 'dark';
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {

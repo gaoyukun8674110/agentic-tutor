@@ -115,6 +115,7 @@ export interface TutorChatResponse {
   credential_source?: 'user' | 'global' | 'local';
   credential_fingerprint?: string | null;
   agent_path?: string[];
+  used_tools?: string[];
   diagnosis?: ChatDiagnosis | null;
 }
 
@@ -260,6 +261,16 @@ export async function uploadStudyMaterial(
   const formData = new FormData();
   formData.append('file', file);
   return apiUpload<StudyMaterial>('/api/materials/upload', formData, options);
+}
+
+export async function reingestStudyMaterial(
+  materialId: number,
+  options?: ApiRequestOptions,
+): Promise<StudyMaterial> {
+  return apiFetch<StudyMaterial>(`/api/materials/${materialId}/reingest`, {
+    ...options,
+    method: 'POST',
+  });
 }
 
 export async function searchStudyMaterials(

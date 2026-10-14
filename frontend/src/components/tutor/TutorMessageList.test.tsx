@@ -46,8 +46,9 @@ describe('TutorMessageList diagnosis badge', () => {
       />,
     );
 
-    const text = screen.getByTestId('diagnosis-badge').textContent;
-    expect(text).toContain('Diagnosed · Concept error');
+    const text = screen.getByTestId('diagnosis-panel').textContent;
+    expect(text).toContain('Diagnosis · Needs work');
+    expect(text).toContain('Cause · Concept error');
     expect(text).toContain('Algebra new → 0.16');
   });
 
@@ -81,9 +82,34 @@ describe('TutorMessageList diagnosis badge', () => {
       />,
     );
 
-    const text = screen.getByTestId('diagnosis-badge').textContent;
+    const text = screen.getByTestId('diagnosis-panel').textContent;
     expect(text).toContain('Calculation error');
     expect(text).toContain('Geometry 0.42 → 0.37');
+  });
+
+  it('renders used tools under the assistant message', () => {
+    render(
+      <TutorMessageList
+        messages={[
+          {
+            id: 'a1',
+            role: 'assistant',
+            content: 'I checked your notes.',
+            usedTools: ['retrieve_materials', 'web_search'],
+          },
+        ]}
+        materialContext={null}
+        isSending={false}
+        language="en"
+        tokens={tokens}
+        t={t}
+      />,
+    );
+
+    const text = screen.getByTestId('used-tools').textContent;
+    expect(text).toContain('Tools');
+    expect(text).toContain('Materials');
+    expect(text).toContain('Web search');
   });
 
   it('does not render diagnosis for missing diagnosis or user messages', () => {

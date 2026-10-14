@@ -12,4 +12,5 @@ export interface ChatMessage {
   credentialSource?: 'user' | 'global' | 'local';
   credentialFingerprint?: string | null;
   diagnosis?: ChatDiagnosis | null;
+  usedTools?: string[];
 }

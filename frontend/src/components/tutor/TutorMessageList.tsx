@@ -48,6 +48,23 @@ export function TutorMessageList({
   };
   const formatMastery = (value: number | null | undefined) =>
     value == null ? t('新', 'new') : value.toFixed(2);
+  const toolLabel = (tool: string) => {
+    switch (tool) {
+      case 'retrieve_materials':
+      case 'retriever':
+        return t('资料检索', 'Materials');
+      case 'web_search':
+        return t('联网搜索', 'Web search');
+      case 'calculate':
+      case 'math':
+        return t('计算校验', 'Calculator');
+      case 'get_learner_profile':
+      case 'learner_store':
+        return t('学习画像', 'Learner profile');
+      default:
+        return tool;
+    }
+  };
 
   return (
     <div className="space-y-6 py-8" style={{ maxWidth: 820, margin: '0 auto' }}>
@@ -87,34 +104,50 @@ export function TutorMessageList({
                   )}
                 </div>
               )}
-              {!isUser && message.diagnosis && (
+              {!isUser && (message.diagnosis || (message.usedTools?.length ?? 0) > 0) && (
                 <div
-                  data-testid="diagnosis-badge"
-                  className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium"
-                  style={{ color: tokens.textSecondary }}
+                  data-testid="diagnosis-panel"
+                  className="mb-3 rounded-2xl border px-3 py-2 text-xs"
+                  style={{
+                    borderColor: 'var(--ai-border-subtle)',
+                    background: tokens.surfaceMuted,
+                    color: tokens.textSecondary,
+                  }}
                 >
-                  <span
-                    className="rounded-full border px-2 py-0.5"
-                    style={{
-                      borderColor: 'var(--ai-border-subtle)',
-                      background: tokens.surfaceMuted,
-                    }}
-                  >
-                    {t('已诊断', 'Diagnosed')} · {errorTypeLabel(message.diagnosis.error_type)}
-                  </span>
-                  {message.diagnosis.skills_updated.map((skill) => (
-                    <span
-                      key={skill.skill_id}
-                      className="rounded-full border px-2 py-0.5"
-                      style={{
-                        borderColor: 'var(--ai-border-subtle)',
-                        background: tokens.surfaceMuted,
-                      }}
+                  {message.diagnosis && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span data-testid="diagnosis-badge" className="font-medium">
+                        {t('诊断结果', 'Diagnosis')} ·{' '}
+                        {message.diagnosis.is_correct
+                          ? t('正确', 'Correct')
+                          : t('需修正', 'Needs work')}
+                      </span>
+                      <span>
+                        {t('错因', 'Cause')} · {errorTypeLabel(message.diagnosis.error_type)}
+                      </span>
+                      {message.diagnosis.skills_updated.map((skill) => (
+                        <span key={skill.skill_id}>
+                          {skill.skill_name} {formatMastery(skill.mastery_before)} →{' '}
+                          {formatMastery(skill.mastery_score)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {(message.usedTools?.length ?? 0) > 0 && (
+                    <div
+                      data-testid="used-tools"
+                      className={
+                        message.diagnosis ? 'mt-1 flex flex-wrap gap-1.5' : 'flex flex-wrap gap-1.5'
+                      }
                     >
-                      {skill.skill_name} {formatMastery(skill.mastery_before)} →{' '}
-                      {formatMastery(skill.mastery_score)}
-                    </span>
-                  ))}
+                      <span>{t('使用工具', 'Tools')}</span>
+                      {message.usedTools?.map((tool) => (
+                        <span key={tool} className="font-medium">
+                          {toolLabel(tool)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <MathMessage content={message.content} isUser={isUser} />

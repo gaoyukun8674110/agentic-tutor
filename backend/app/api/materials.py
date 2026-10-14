@@ -1,5 +1,6 @@
 """Study material upload and retrieval API."""
 
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Request, UploadFile
@@ -8,13 +9,22 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.config import settings
-from app.database import get_db
+from app.database import SessionLocal, get_db
 from app.models.user import User
 from app.services.materials import SUPPORTED_EXTENSIONS, MaterialService
 from app.utils.errors import api_error
-from app.utils.upload import max_upload_bytes, read_validated_upload
+from app.utils.upload import max_upload_bytes, save_validated_upload
 
 router = APIRouter(prefix="/api/materials", tags=["materials"], dependencies=[Depends(get_current_user)])
+
+
+def ingest_material_background(material_id: int) -> None:
+    """Ingest a material in a fresh session owned by the background task."""
+    db = SessionLocal()
+    try:
+        MaterialService(db).ingest_material(material_id)
+    finally:
+        db.close()
 
 
 class MaterialSearchRequest(BaseModel):
@@ -23,7 +33,7 @@ class MaterialSearchRequest(BaseModel):
     top_k: int | None = Field(default=None, ge=1, le=10)
 
 
-@router.post("/upload", response_model=dict)
+@router.post("/upload", response_model=dict, status_code=202)
 async def upload_material(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -36,19 +46,43 @@ async def upload_material(
     if content_length and int(content_length) > max_upload_bytes() + 1024 * 1024:
         raise api_error(413, "upload_too_large", f"Upload exceeds {settings.MAX_UPLOAD_SIZE_MB} MB limit")
 
-    content = await read_validated_upload(file)
-    service = MaterialService(db)
     try:
-        material = service.create_pending_material_from_bytes(
+        path, size = await save_validated_upload(file, Path(settings.RAG_UPLOAD_DIR))
+        service = MaterialService(db)
+        material = service.create_pending_material_from_path(
             filename=file.filename or "material",
-            content=content,
+            storage_path=path,
+            size_bytes=size,
             content_type=file.content_type,
             user_id=current_user.username,
         )
-        background_tasks.add_task(service.fill_material_embeddings, int(material["id"]))
+        background_tasks.add_task(ingest_material_background, int(material["id"]))
         return material
     except ValueError as error:
         raise api_error(400, "invalid_material", str(error)) from error
+
+
+@router.delete("/{material_id}", response_model=dict)
+def delete_material(
+    material_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    service = MaterialService(db)
+    return service.delete_material(material_id, user_id=current_user.username)
+
+
+@router.post("/{material_id}/reingest", response_model=dict, status_code=202)
+def reingest_material(
+    material_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    service = MaterialService(db)
+    material = service.prepare_material_reingest(material_id, user_id=current_user.username)
+    background_tasks.add_task(ingest_material_background, int(material["id"]))
+    return material
 
 
 @router.get("", response_model=dict)

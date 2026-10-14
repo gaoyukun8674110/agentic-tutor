@@ -87,7 +87,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:4173",
         "http://127.0.0.1:5173",
     ]
-    MAX_UPLOAD_SIZE_MB: int = 25
+    MAX_UPLOAD_SIZE_MB: int = 100
 
     # Auth
     JWT_SECRET: str | None = None
@@ -125,6 +125,16 @@ class Settings(BaseSettings):
     RAG_EMBEDDING_BASE_URL: str = "https://api.openai.com/v1"
     RAG_EMBEDDING_MODEL: str = "text-embedding-3-small"
     RAG_HASH_EMBEDDING_DIMENSIONS: int | None = None
+    MAX_PDF_PAGES: int = 500
+    MAX_ZIP_UNCOMPRESSED_BYTES: int = 100 * 1024 * 1024
+    # PDF image handling mode: "off" | "ocr" | "vision".
+    # The default "off" skips image-only pages and records a warning.
+    RAG_PDF_IMAGE_MODE: str = "off"
+    RAG_PDF_MIN_TEXT_CHARS_PER_PAGE: int = 20
+    RAG_PDF_MAX_VISION_PAGES: int = 30
+    RAG_VISION_API_KEY: str | None = None
+    RAG_VISION_BASE_URL: str = "https://api.openai.com/v1"
+    RAG_VISION_MODEL: str = "gpt-4o-mini"
 
     def model_post_init(self, __context: object) -> None:
         global _warned_ephemeral_jwt_secret

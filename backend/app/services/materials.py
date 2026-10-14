@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import html.parser
+import logging
 import math
 import re
 import zipfile
@@ -18,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models.materials import StudyMaterial, StudyMaterialChunk
+from app.utils.errors import api_error
 
 SUPPORTED_EXTENSIONS = {".txt", ".md", ".docx", ".pdf", ".epub"}
 WORD_RE = re.compile(r"[\w\u4e00-\u9fff]+", re.UNICODE)
@@ -63,9 +65,40 @@ def extract_text_from_file_bytes(filename: str, content: bytes, content_type: st
     raise ValueError(f"Unsupported material file type: {suffix}")
 
 
+def extract_text_from_path(
+    filename: str,
+    path: Path,
+    content_type: str | None = None,
+    warnings: list[str] | None = None,
+) -> str:
+    suffix = Path(filename).suffix.lower()
+    if suffix not in SUPPORTED_EXTENSIONS:
+        raise ValueError(f"Unsupported material file type: {suffix or 'unknown'}")
+
+    if suffix in {".txt", ".md"}:
+        return normalize_text(path.open("rb").read().decode("utf-8", errors="replace"))
+    if suffix == ".docx":
+        with zipfile.ZipFile(path) as archive:
+            return _extract_docx_text_from_archive(archive)
+    if suffix == ".epub":
+        with zipfile.ZipFile(path) as archive:
+            return _extract_epub_text_from_archive(archive)
+    if suffix == ".pdf":
+        extractor = PdfExtractor(path)
+        text = extractor.extract()
+        if warnings is not None:
+            warnings.extend(extractor.skip_warnings())
+        return text
+    raise ValueError(f"Unsupported material file type: {suffix}")
+
+
 def _extract_docx_text(content: bytes) -> str:
     with zipfile.ZipFile(PathLikeBytes(content)) as archive:
-        document_xml = archive.read("word/document.xml")
+        return _extract_docx_text_from_archive(archive)
+
+
+def _extract_docx_text_from_archive(archive: zipfile.ZipFile) -> str:
+    document_xml = archive.read("word/document.xml")
     root = ElementTree.fromstring(document_xml)
     texts = [node.text for node in root.iter() if node.tag.endswith("}t") and node.text and node.text.strip()]
     extracted = normalize_text("\n".join(texts))
@@ -75,16 +108,20 @@ def _extract_docx_text(content: bytes) -> str:
 
 
 def _extract_epub_text(content: bytes) -> str:
-    parts = []
     with zipfile.ZipFile(PathLikeBytes(content)) as archive:
-        for name in sorted(archive.namelist()):
-            if not name.lower().endswith((".html", ".xhtml", ".htm")):
-                continue
-            parser = _HtmlTextExtractor()
-            parser.feed(archive.read(name).decode("utf-8", errors="replace"))
-            text = parser.text()
-            if text:
-                parts.append(text)
+        return _extract_epub_text_from_archive(archive)
+
+
+def _extract_epub_text_from_archive(archive: zipfile.ZipFile) -> str:
+    parts = []
+    for name in sorted(archive.namelist()):
+        if not name.lower().endswith((".html", ".xhtml", ".htm")):
+            continue
+        parser = _HtmlTextExtractor()
+        parser.feed(archive.read(name).decode("utf-8", errors="replace"))
+        text = parser.text()
+        if text:
+            parts.append(text)
     extracted = normalize_text("\n\n".join(parts))
     if not extracted:
         raise ValueError("No readable text found in EPUB file")
@@ -107,6 +144,148 @@ def _extract_pdf_text(content: bytes) -> str:
     if not extracted:
         raise ValueError("No readable text found in PDF file; OCR is not supported in RAG v1")
     return extracted
+
+
+class PdfExtractor:
+    """Extract merged page text and Markdown tables from a PDF path."""
+
+    def __init__(self, path: Path, min_text_chars_per_page: int | None = None) -> None:
+        self.path = path
+        self.min_text_chars_per_page = (
+            min_text_chars_per_page if min_text_chars_per_page is not None else settings.RAG_PDF_MIN_TEXT_CHARS_PER_PAGE
+        )
+        self._image_pages: list[int] | None = None
+        self._skipped_pages: list[int] = []
+        self._unknown_mode_warning: str | None = None
+
+    def image_pages(self) -> list[int]:
+        """Return 1-based pages with little extracted text and no tables."""
+        if self._image_pages is not None:
+            return self._image_pages
+
+        import pdfplumber
+
+        pages: list[int] = []
+        with pdfplumber.open(self.path) as pdf:
+            for index, page in enumerate(pdf.pages, start=1):
+                text = (page.extract_text() or "").strip()
+                tables = page.extract_tables() or []
+                if len(text) < self.min_text_chars_per_page and not tables:
+                    pages.append(index)
+        self._image_pages = pages
+        return pages
+
+    def skip_warnings(self) -> list[str]:
+        """Return warning text for skipped image pages."""
+        mode = self._effective_mode()
+        warnings: list[str] = []
+        if self._unknown_mode_warning:
+            warnings.append(self._unknown_mode_warning)
+        if mode == "off":
+            warnings.extend(
+                [f"[p{page_number}] 图片页已跳过（当前 RAG_PDF_IMAGE_MODE=off）" for page_number in self.image_pages()]
+            )
+        elif mode in {"ocr", "vision"}:
+            warnings.extend(
+                [
+                    f"[p{page_number}] 图片页已跳过（超过 RAG_PDF_MAX_VISION_PAGES 上限或处理失败）"
+                    for page_number in self._skipped_pages
+                ]
+            )
+        return warnings
+
+    def extract(self) -> str:
+        """Return normalized merged text; raise ValueError if no readable content exists."""
+        import pdfplumber
+
+        image_pages = set(self.image_pages())
+        mode = self._effective_mode()
+        page_texts: dict[int, str] = {}
+        skipped: list[int] = []
+        if mode in {"ocr", "vision"} and image_pages:
+            from app.services.pdf_images import PageImageProcessor
+
+            processor = PageImageProcessor(mode, settings.RAG_PDF_MAX_VISION_PAGES)
+            page_texts, skipped = processor.process(self.path, sorted(image_pages))
+            self._skipped_pages = skipped
+        else:
+            self._skipped_pages = []
+
+        parts: list[str] = []
+        non_image_output_count = 0
+        with pdfplumber.open(self.path) as pdf:
+            page_count = len(pdf.pages)
+            for index, page in enumerate(pdf.pages, start=1):
+                text = (page.extract_text() or "").strip()
+                tables = page.extract_tables() or []
+                page_parts: list[str] = []
+
+                if index in image_pages:
+                    if mode == "off":
+                        page_parts.append(f"[page {index}: 图片页已跳过]")
+                    elif index in page_texts:
+                        image_block = f"[page {index}]\n[image p{index}]"
+                        if page_texts[index].strip():
+                            image_block += f"\n{page_texts[index].strip()}"
+                        page_parts.append(image_block)
+                    elif index in skipped:
+                        page_parts.append(
+                            f"[page {index}: 图片页已跳过（超过 RAG_PDF_MAX_VISION_PAGES 上限或处理失败）]"
+                        )
+                else:
+                    if text or tables:
+                        non_image_output_count += 1
+                        page_block = f"[page {index}]"
+                        if text:
+                            page_block += f"\n{text}"
+                        page_parts.append(page_block)
+
+                for table in tables:
+                    markdown = self._table_to_markdown(table)
+                    if markdown:
+                        page_parts.append(f"[table p{index}]\n```markdown\n{markdown}\n```")
+
+                if page_parts:
+                    parts.append("\n\n".join(page_parts))
+
+        if mode == "off" and page_count > 0 and len(image_pages) == page_count:
+            raise ValueError("此 PDF 无文本层，请开启图片处理（设置 RAG_PDF_IMAGE_MODE=ocr 或 vision 后重新上传）")
+        if mode in {"ocr", "vision"} and image_pages and not page_texts and skipped and non_image_output_count == 0:
+            raise ValueError("PDF 图片页处理全部失败，请检查 RAG_VISION_API_KEY / tesseract 安装后重新上传")
+
+        extracted = normalize_text("\n\n".join(parts))
+        if not extracted:
+            raise ValueError("No readable text found in PDF file; OCR is not supported in RAG v1")
+        return extracted
+
+    def _effective_mode(self) -> str:
+        raw_mode = settings.RAG_PDF_IMAGE_MODE
+        mode = (raw_mode or "off").strip().lower()
+        if mode in {"off", "ocr", "vision"}:
+            self._unknown_mode_warning = None
+            return mode
+        self._unknown_mode_warning = f"[config] 未知的 RAG_PDF_IMAGE_MODE={raw_mode!r}，已按 off 处理"
+        return "off"
+
+    def _table_to_markdown(self, table: list[list[Any]]) -> str:
+        rows = [[self._format_table_cell(cell) for cell in row] for row in table if row]
+        if not rows:
+            return ""
+        column_count = max(len(row) for row in rows)
+        normalized_rows = [row + [""] * (column_count - len(row)) for row in rows]
+        header = normalized_rows[0]
+        lines = [
+            "| " + " | ".join(header) + " |",
+            "| " + " | ".join(["---"] * column_count) + " |",
+        ]
+        for row in normalized_rows[1:]:
+            lines.append("| " + " | ".join(row) + " |")
+        return "\n".join(lines)
+
+    def _format_table_cell(self, cell: Any) -> str:
+        if cell is None:
+            return ""
+        return str(cell).strip().replace("|", "\\|").replace("\n", "<br>")
 
 
 class PathLikeBytes:
@@ -316,26 +495,18 @@ class MaterialService:
         self.db.refresh(material)
         return self._material_payload(material)
 
-    def create_pending_material_from_bytes(
+    def create_pending_material_from_path(
         self,
         filename: str,
-        content: bytes,
+        storage_path: Path,
+        size_bytes: int,
         content_type: str | None = None,
         user_id: str | None = None,
     ) -> dict[str, Any]:
-        extracted_text = extract_text_from_file_bytes(filename, content, content_type)
-        chunks = chunk_text(extracted_text, chunk_size=self.chunk_size, overlap=self.chunk_overlap)
-        if not chunks:
-            raise ValueError("No searchable text chunks could be created from this material")
-
+        logging.getLogger(__name__).info(
+            "registered pending material %s at %s (%s bytes)", filename, storage_path, size_bytes
+        )
         now = datetime.now().isoformat()
-        self.upload_dir.mkdir(parents=True, exist_ok=True)
-        digest = hashlib.sha256(content).hexdigest()[:16]
-        safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", Path(filename).name or "material").strip("._") or "material"
-        storage_name = f"{digest}-{safe_name}"
-        storage_path = self.upload_dir / storage_name
-        storage_path.write_bytes(content)
-
         material = StudyMaterial(
             user_id=user_id,
             filename=Path(filename).name or "material",
@@ -343,7 +514,7 @@ class MaterialService:
             content_type=content_type,
             storage_path=str(storage_path),
             status="pending",
-            char_count=len(extracted_text),
+            char_count=0,
             chunk_count=0,
             created_at=now,
             updated_at=now,
@@ -353,15 +524,19 @@ class MaterialService:
         self.db.refresh(material)
         return self._material_payload(material)
 
-    def fill_material_embeddings(self, material_id: int) -> dict[str, Any]:
+    def ingest_material(self, material_id: int) -> dict[str, Any]:
         material = self.db.query(StudyMaterial).filter(StudyMaterial.id == material_id).one_or_none()
         if material is None:
             raise ValueError("Material not found")
 
         try:
-            content = Path(material.storage_path).read_bytes()
-            extracted_text = extract_text_from_file_bytes(material.filename, content, material.content_type)
+            warnings: list[str] = []
+            extracted_text = extract_text_from_path(
+                material.filename, Path(material.storage_path), material.content_type, warnings
+            )
             chunks = chunk_text(extracted_text, chunk_size=self.chunk_size, overlap=self.chunk_overlap)
+            if not chunks:
+                raise ValueError("No searchable text chunks could be created from this material")
             now = datetime.now().isoformat()
             self.db.query(StudyMaterialChunk).filter(StudyMaterialChunk.material_id == material.id).delete()
             embeddings = self._embed_texts([chunk["content"] for chunk in chunks])
@@ -371,13 +546,13 @@ class MaterialService:
                         material_id=material.id,
                         chunk_index=chunk["chunk_index"],
                         content=chunk["content"],
-                        source_label=f"{material.filename} chunk {chunk['chunk_index'] + 1}",
+                        source_label=f"{material.filename} 路 chunk {chunk['chunk_index'] + 1}",
                         embedding=embedding,
                         created_at=now,
                     )
                 )
             material.status = "ready"
-            material.error = None
+            material.error = ("warning: " + " | ".join(warnings)) if warnings else None
             material.char_count = len(extracted_text)
             material.chunk_count = len(chunks)
             material.updated_at = now
@@ -390,6 +565,42 @@ class MaterialService:
             material.updated_at = datetime.now().isoformat()
             self.db.commit()
             raise
+
+    def prepare_material_reingest(self, material_id: int, user_id: str | None = None) -> dict[str, Any]:
+        material = self.db.query(StudyMaterial).filter(StudyMaterial.id == material_id).one_or_none()
+        if material is None:
+            raise api_error(404, "material_not_found", f"Material {material_id} not found")
+        if user_id is not None and material.user_id is not None and material.user_id != user_id:
+            raise api_error(404, "material_not_found", f"Material {material_id} not found")
+
+        self.db.query(StudyMaterialChunk).filter(StudyMaterialChunk.material_id == material.id).delete()
+        material.status = "pending"
+        material.error = None
+        material.char_count = 0
+        material.chunk_count = 0
+        material.updated_at = datetime.now().isoformat()
+        self.db.commit()
+        self.db.refresh(material)
+        return self._material_payload(material)
+
+    def delete_material(self, material_id: int, user_id: str | None = None) -> dict[str, Any]:
+        material = self.db.query(StudyMaterial).filter(StudyMaterial.id == material_id).one_or_none()
+        if material is None:
+            raise api_error(404, "material_not_found", f"Material {material_id} not found")
+        if user_id is not None and material.user_id is not None and material.user_id != user_id:
+            raise api_error(404, "material_not_found", f"Material {material_id} not found")
+
+        path = Path(material.storage_path) if material.storage_path else None
+        self.db.delete(material)
+        self.db.commit()
+
+        if path is not None:
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                logging.getLogger(__name__).warning("failed to remove material file %s", path, exc_info=True)
+
+        return {"id": material_id, "deleted": True}
 
     def list_materials(self, user_id: str | None = None) -> list[dict[str, Any]]:
         query = self.db.query(StudyMaterial)

@@ -177,7 +177,7 @@ export function TodayPlan({ onStatsChange, onDataChange, tasks = [] }: TodayPlan
       <div className="border-b p-6" style={panelStyle}>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-medium" style={{ color: tokens.accentSecondary }}>
+            <h2 className="text-lg font-medium" style={{ color: tokens.textPrimary }}>
               {t('今日学习计划', "Today's plan")}
             </h2>
             <p className="mt-1 text-sm" style={{ color: tokens.textSecondary }}>
@@ -240,7 +240,7 @@ export function TodayPlan({ onStatsChange, onDataChange, tasks = [] }: TodayPlan
               onClick={saveTask}
               disabled={!taskText.trim() || saveTaskMutation.isPending}
               className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl px-4 disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ background: tokens.accentSecondary, color: tokens.textInverted }}
+              style={{ background: tokens.accentPrimary, color: tokens.textInverted }}
             >
               {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               {editingId ? t('保存', 'Save') : t('添加', 'Add')}
