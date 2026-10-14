@@ -18,9 +18,7 @@ def test_module_imports_without_tesseract():
     assert hasattr(pdf_images, "render_page_png")
     assert hasattr(pdf_images, "PageImageProcessor")
     top_level_imports = [
-        line
-        for line in inspect.getsource(pdf_images).splitlines()
-        if line.startswith(("import ", "from "))
+        line for line in inspect.getsource(pdf_images).splitlines() if line.startswith(("import ", "from "))
     ]
     assert not any("import pypdfium2" in line for line in top_level_imports)
     assert not any("import pytesseract" in line for line in top_level_imports)

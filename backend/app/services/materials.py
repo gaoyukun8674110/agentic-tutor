@@ -152,9 +152,7 @@ class PdfExtractor:
     def __init__(self, path: Path, min_text_chars_per_page: int | None = None) -> None:
         self.path = path
         self.min_text_chars_per_page = (
-            min_text_chars_per_page
-            if min_text_chars_per_page is not None
-            else settings.RAG_PDF_MIN_TEXT_CHARS_PER_PAGE
+            min_text_chars_per_page if min_text_chars_per_page is not None else settings.RAG_PDF_MIN_TEXT_CHARS_PER_PAGE
         )
         self._image_pages: list[int] | None = None
         self._skipped_pages: list[int] = []
@@ -231,7 +229,9 @@ class PdfExtractor:
                             image_block += f"\n{page_texts[index].strip()}"
                         page_parts.append(image_block)
                     elif index in skipped:
-                        page_parts.append(f"[page {index}: 图片页已跳过（超过 RAG_PDF_MAX_VISION_PAGES 上限或处理失败）]")
+                        page_parts.append(
+                            f"[page {index}: 图片页已跳过（超过 RAG_PDF_MAX_VISION_PAGES 上限或处理失败）]"
+                        )
                 else:
                     if text or tables:
                         non_image_output_count += 1
@@ -250,13 +250,7 @@ class PdfExtractor:
 
         if mode == "off" and page_count > 0 and len(image_pages) == page_count:
             raise ValueError("此 PDF 无文本层，请开启图片处理（设置 RAG_PDF_IMAGE_MODE=ocr 或 vision 后重新上传）")
-        if (
-            mode in {"ocr", "vision"}
-            and image_pages
-            and not page_texts
-            and skipped
-            and non_image_output_count == 0
-        ):
+        if mode in {"ocr", "vision"} and image_pages and not page_texts and skipped and non_image_output_count == 0:
             raise ValueError("PDF 图片页处理全部失败，请检查 RAG_VISION_API_KEY / tesseract 安装后重新上传")
 
         extracted = normalize_text("\n\n".join(parts))

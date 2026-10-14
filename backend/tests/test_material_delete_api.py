@@ -92,7 +92,9 @@ def test_delete_other_users_material_returns_404(tmp_path):
         path = tmp_path / "other.md"
         path.write_text("belongs to someone else", encoding="utf-8")
         service = service_for(db, tmp_path)
-        material = service.create_pending_material_from_path("other.md", path, path.stat().st_size, None, "someone-else")
+        material = service.create_pending_material_from_path(
+            "other.md", path, path.stat().st_size, None, "someone-else"
+        )
         client = build_client(db)
 
         with patch("app.api.materials.MaterialService", side_effect=lambda session: service_for(session, tmp_path)):

@@ -70,7 +70,9 @@ def test_ingest_failure_marks_failed(db_session, tmp_path):
     path = tmp_path / "broken.pdf"
     path.write_bytes(b"not a pdf")
     service = service_for(db_session, tmp_path)
-    pending = service.create_pending_material_from_path("broken.pdf", path, path.stat().st_size, "application/pdf", "alice")
+    pending = service.create_pending_material_from_path(
+        "broken.pdf", path, path.stat().st_size, "application/pdf", "alice"
+    )
 
     with pytest.raises(PdfStreamError):
         service.ingest_material(int(pending["id"]))

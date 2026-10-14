@@ -47,9 +47,7 @@ async def save_validated_upload(file: UploadFile, dest_dir: Path) -> tuple[Path,
                 if total > max_upload_bytes():
                     output.close()
                     temp_path.unlink(missing_ok=True)
-                    raise api_error(
-                        413, "upload_too_large", f"Upload exceeds {settings.MAX_UPLOAD_SIZE_MB} MB limit"
-                    )
+                    raise api_error(413, "upload_too_large", f"Upload exceeds {settings.MAX_UPLOAD_SIZE_MB} MB limit")
                 output.write(chunk)
 
         validate_uploaded_file(temp_path, filename)
