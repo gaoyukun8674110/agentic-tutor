@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from pypdf.errors import PdfStreamError
+from pdfplumber.utils.exceptions import PdfminerException
 
 from app.config import settings
 from app.models.materials import StudyMaterial, StudyMaterialChunk
@@ -74,9 +74,9 @@ def test_ingest_failure_marks_failed(db_session, tmp_path):
         "broken.pdf", path, path.stat().st_size, "application/pdf", "alice"
     )
 
-    with pytest.raises(PdfStreamError):
+    with pytest.raises(PdfminerException) as exc_info:
         service.ingest_material(int(pending["id"]))
 
     material = db_session.query(StudyMaterial).filter_by(id=pending["id"]).one()
     assert material.status == "failed"
-    assert material.error
+    assert material.error == str(exc_info.value)
