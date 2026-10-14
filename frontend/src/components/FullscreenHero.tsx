@@ -30,7 +30,10 @@ export function FullscreenHero() {
           <div className="text-left">
             <div
               className="text-xl leading-none text-white"
-              style={{ fontFamily: "'Noto Serif SC', 'Songti SC', 'Georgia', serif", fontWeight: 700 }}
+              style={{
+                fontFamily: "'Noto Serif SC', 'Songti SC', 'Georgia', serif",
+                fontWeight: 700,
+              }}
             >
               砚思
             </div>

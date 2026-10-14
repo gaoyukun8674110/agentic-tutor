@@ -117,7 +117,10 @@ function materialStatusCopy(
   return { label: t('就绪', 'Ready'), tone: 'ready' };
 }
 
-function materialStatusStyle(tokens: ThemeTokens, tone: 'ready' | 'pending' | 'failed' | 'warning') {
+function materialStatusStyle(
+  tokens: ThemeTokens,
+  tone: 'ready' | 'pending' | 'failed' | 'warning',
+) {
   return {
     ready: { background: tokens.successSoft, color: tokens.success },
     pending: { background: tokens.infoSoft, color: tokens.info },
@@ -334,7 +337,9 @@ export function TutorSidebar({
                   title={t('刷新资料状态', 'Refresh material status')}
                   style={{ color: tokens.textMuted }}
                 >
-                  <RotateCcw className={`h-3.5 w-3.5 ${isRefreshingMaterials ? 'animate-spin' : ''}`} />
+                  <RotateCcw
+                    className={`h-3.5 w-3.5 ${isRefreshingMaterials ? 'animate-spin' : ''}`}
+                  />
                 </button>
                 <span className="text-xs" style={{ color: tokens.textMuted }}>
                   {selectedMaterialIds.length}/{materials.length}

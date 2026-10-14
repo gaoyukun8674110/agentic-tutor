@@ -63,6 +63,8 @@ describe('StudyStats', () => {
       />,
     );
 
-    expect(screen.getByText('本周还没有学习记录，开始一个番茄钟即可生成趋势。')).toBeInTheDocument();
+    expect(
+      screen.getByText('本周还没有学习记录，开始一个番茄钟即可生成趋势。'),
+    ).toBeInTheDocument();
   });
 });

@@ -34,36 +34,33 @@ export function useTutorMaterials() {
     }
   }, []);
 
-  const startMaterialPolling = useCallback(
-    () => {
-      if (typeof window === 'undefined') return;
-      if (pollingIntervalRef.current !== null) return;
-      pollingStartedAtRef.current = Date.now();
-      setMaterialPollingExpired(false);
-      pollingIntervalRef.current = window.setInterval(() => {
-        const startedAt = pollingStartedAtRef.current ?? Date.now();
-        if (Date.now() - startedAt >= MATERIAL_POLL_TIMEOUT_MS) {
-          setMaterialPollingExpired(true);
-          stopMaterialPolling();
-          return;
-        }
-        void queryClient
-          .fetchQuery({
-            queryKey: tutorQueryKeys.materials(),
-            queryFn: () => fetchStudyMaterials(),
-          })
-          .then((items) => {
-            if (!items.some((item) => item.status === 'pending')) {
-              stopMaterialPolling();
-            }
-          })
-          .catch(() => {
+  const startMaterialPolling = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (pollingIntervalRef.current !== null) return;
+    pollingStartedAtRef.current = Date.now();
+    setMaterialPollingExpired(false);
+    pollingIntervalRef.current = window.setInterval(() => {
+      const startedAt = pollingStartedAtRef.current ?? Date.now();
+      if (Date.now() - startedAt >= MATERIAL_POLL_TIMEOUT_MS) {
+        setMaterialPollingExpired(true);
+        stopMaterialPolling();
+        return;
+      }
+      void queryClient
+        .fetchQuery({
+          queryKey: tutorQueryKeys.materials(),
+          queryFn: () => fetchStudyMaterials(),
+        })
+        .then((items) => {
+          if (!items.some((item) => item.status === 'pending')) {
             stopMaterialPolling();
-          });
-      }, MATERIAL_POLL_INTERVAL_MS);
-    },
-    [queryClient, stopMaterialPolling],
-  );
+          }
+        })
+        .catch(() => {
+          stopMaterialPolling();
+        });
+    }, MATERIAL_POLL_INTERVAL_MS);
+  }, [queryClient, stopMaterialPolling]);
 
   const uploadStudyMaterialMutation = useMutation({
     mutationFn: (file: File) => uploadStudyMaterial(file),

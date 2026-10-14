@@ -23,10 +23,10 @@ interface BrandMarkProps {
 export function BrandMark({ size, glyphSize, hero, className }: BrandMarkProps) {
   const { tokens } = useSettings();
 
-  const tile = hero ? HERO_TILE : tokens.brandTile ?? 'var(--ai-brand-tile)';
-  const glyph = hero ? HERO_GLYPH : tokens.brandGlyph ?? 'var(--ai-brand-glyph)';
-  const ring = hero ? HERO_RING : tokens.brandRing ?? 'var(--ai-brand-ring)';
-  const shadow = hero ? HERO_SHADOW : tokens.brandShadow ?? 'var(--ai-brand-shadow)';
+  const tile = hero ? HERO_TILE : (tokens.brandTile ?? 'var(--ai-brand-tile)');
+  const glyph = hero ? HERO_GLYPH : (tokens.brandGlyph ?? 'var(--ai-brand-glyph)');
+  const ring = hero ? HERO_RING : (tokens.brandRing ?? 'var(--ai-brand-ring)');
+  const shadow = hero ? HERO_SHADOW : (tokens.brandShadow ?? 'var(--ai-brand-shadow)');
 
   const side = size ?? 44;
   const glyphPx = glyphSize ?? Math.round(side * 0.55);

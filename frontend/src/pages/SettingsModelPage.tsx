@@ -298,7 +298,9 @@ export function SettingsModelPage() {
                       style={cardSurfaceStyle(tokens)}
                     >
                       <CheckCircle2 className="h-4 w-4" />
-                      {testMutation.isPending ? t('测试中', 'Testing') : t('测试连接', 'Test connection')}
+                      {testMutation.isPending
+                        ? t('测试中', 'Testing')
+                        : t('测试连接', 'Test connection')}
                     </Button>
                     <Button
                       onClick={() => patchMutation.mutate({ isDefault: true })}

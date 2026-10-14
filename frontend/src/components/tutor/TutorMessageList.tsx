@@ -118,7 +118,9 @@ export function TutorMessageList({
                     <div className="flex flex-wrap items-center gap-2">
                       <span data-testid="diagnosis-badge" className="font-medium">
                         {t('诊断结果', 'Diagnosis')} ·{' '}
-                        {message.diagnosis.is_correct ? t('正确', 'Correct') : t('需修正', 'Needs work')}
+                        {message.diagnosis.is_correct
+                          ? t('正确', 'Correct')
+                          : t('需修正', 'Needs work')}
                       </span>
                       <span>
                         {t('错因', 'Cause')} · {errorTypeLabel(message.diagnosis.error_type)}
@@ -134,7 +136,9 @@ export function TutorMessageList({
                   {(message.usedTools?.length ?? 0) > 0 && (
                     <div
                       data-testid="used-tools"
-                      className={message.diagnosis ? 'mt-1 flex flex-wrap gap-1.5' : 'flex flex-wrap gap-1.5'}
+                      className={
+                        message.diagnosis ? 'mt-1 flex flex-wrap gap-1.5' : 'flex flex-wrap gap-1.5'
+                      }
                     >
                       <span>{t('使用工具', 'Tools')}</span>
                       {message.usedTools?.map((tool) => (

@@ -21,8 +21,8 @@
   --ai-page-gradient: linear-gradient(180deg, #bfe1fb 0%, #eaf4fe 100%);
   --ai-page-top: #bfe1fb;
   --ai-overlay-gradient:
-    radial-gradient(circle at 80% -6%, rgba(255,255,255,0.55), transparent 46%),
-    radial-gradient(circle at 6% 108%, rgba(255,255,255,0.4), transparent 42%);
+    radial-gradient(circle at 80% -6%, rgba(255, 255, 255, 0.55), transparent 46%),
+    radial-gradient(circle at 6% 108%, rgba(255, 255, 255, 0.4), transparent 42%);
   --ai-surface: #ffffff;
   --ai-surface-muted: #eef5fd;
   --ai-surface-accent: #e2eefb;
@@ -93,8 +93,8 @@ body[data-theme='dark'] {
   --ai-page-gradient: linear-gradient(180deg, #04121f 0%, #0a2744 100%);
   --ai-page-top: #04121f;
   --ai-overlay-gradient:
-    radial-gradient(circle at 82% -4%, rgba(90,140,200,0.1), transparent 46%),
-    radial-gradient(circle at 4% 108%, rgba(120,90,160,0.07), transparent 42%);
+    radial-gradient(circle at 82% -4%, rgba(90, 140, 200, 0.1), transparent 46%),
+    radial-gradient(circle at 4% 108%, rgba(120, 90, 160, 0.07), transparent 42%);
   --ai-surface: #0f2740;
   --ai-surface-muted: #0c2036;
   --ai-surface-accent: #15314c;

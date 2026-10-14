@@ -133,7 +133,9 @@ export function DashboardPage() {
               />
               <KpiCell
                 label={t('本周时长', 'This week')}
-                value={language === 'zh' ? `${weekHours.toFixed(1)} 小时` : `${weekHours.toFixed(1)} h`}
+                value={
+                  language === 'zh' ? `${weekHours.toFixed(1)} 小时` : `${weekHours.toFixed(1)} h`
+                }
                 icon={TrendingUp}
               />
             </div>
