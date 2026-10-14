@@ -50,7 +50,13 @@ export function DashboardPage() {
   const weekHours = (dashboardSummary?.weekly_data ?? []).reduce((sum, day) => sum + day.hours, 0);
 
   const cardStyle = cardSurfaceStyle(tokens);
-  const ctaStyle = primaryActionStyle(tokens);
+  const ctaStyle = {
+    ...primaryActionStyle(tokens),
+    background: 'linear-gradient(135deg, #fff5a6 0%, #f3d966 100%)',
+    border: '1px solid rgba(255, 242, 157, 0.72)',
+    color: '#09263d',
+    boxShadow: '0 8px 24px rgba(245, 216, 95, 0.24)',
+  };
   const serif = "'Noto Serif SC', 'Songti SC', 'Georgia', serif";
 
   const dashboardShellClass = 'mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 xl:px-0';
@@ -68,8 +74,8 @@ export function DashboardPage() {
     <button
       data-testid="dashboard-cta"
       onClick={() => navigate('/tutor')}
-      className="flex h-11 items-center justify-center gap-2 rounded-xl px-6 font-medium transition-all duration-200 hover:-translate-y-[1px] active:scale-[0.98]"
-      style={{ ...ctaStyle, boxShadow: tokens.shadowSoft }}
+      className="flex h-11 items-center justify-center gap-2 rounded-xl px-6 font-medium transition-all duration-200 hover:-translate-y-[1px] hover:brightness-105 active:scale-[0.98]"
+      style={ctaStyle}
     >
       <Zap className="h-5 w-5" />
       {t('进入今日学习', "Enter today's study")}
@@ -139,7 +145,7 @@ export function DashboardPage() {
               </div>
             </WallPanel>
 
-            <div className="flex flex-col gap-4 lg:col-span-1">
+            <div className="flex min-h-0 flex-col gap-4 lg:col-span-1 lg:h-full">
               <WallPanel title={t('番茄钟', 'Pomodoro')} icon={Timer}>
                 <div className="mt-4">
                   <PomodoroTimer
@@ -152,7 +158,7 @@ export function DashboardPage() {
                 </div>
               </WallPanel>
 
-              <aside className="relative p-6" style={cardStyle}>
+              <aside className="relative flex min-h-0 flex-1 flex-col p-6" style={cardStyle}>
                 <span
                   className="absolute grid place-items-center text-center"
                   style={{

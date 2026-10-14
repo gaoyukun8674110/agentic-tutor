@@ -11,6 +11,7 @@ import { TutorComposer } from './tutor/TutorComposer';
 import { TutorMessageList } from './tutor/TutorMessageList';
 import { TutorSidebar } from './tutor/TutorSidebar';
 import { useTutorTimer } from './tutor/useTutorTimer';
+import { SkyBackground } from './SkyBackground';
 
 interface TutorChatWorkspaceProps {
   trainingMode: string;
@@ -223,7 +224,6 @@ export function TutorChatWorkspace({
 
   return (
     <div
-      className="bg-[var(--ai-surface-elevated)]"
       style={{
         ...textStyle,
         position: 'fixed',
@@ -231,10 +231,12 @@ export function TutorChatWorkspace({
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
+        background: 'var(--ai-page-gradient)',
         color: tokens.textPrimary,
       }}
     >
-      <div style={{ width: '100%', height: '100%', minHeight: 0 }}>
+      <SkyBackground variant="static" />
+      <div style={{ width: '100%', height: '100%', minHeight: 0, position: 'relative', zIndex: 1 }}>
         <TutorSidebar
           sidebarOpen={sidebarOpen}
           sidebarWidth={sidebarWidth}
@@ -285,7 +287,6 @@ export function TutorChatWorkspace({
         />
 
         <main
-          className="bg-[var(--ai-surface-elevated)]"
           style={{
             position: 'fixed',
             top: 0,

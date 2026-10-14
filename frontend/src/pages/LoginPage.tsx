@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Brain } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { LandingCtaSection } from '../components/LandingCtaSection';
+import { BrandMark } from '../components/BrandMark';
+import { FullscreenHero } from '../components/FullscreenHero';
 import { Button } from '../components/ui/button';
 import { getUserFacingError } from '../utils/apiClient';
 import { cardSurfaceStyle, primaryActionStyle } from '../utils/glassStyles';
 import { useSettings } from '../utils/settings';
+
+const BRAND_SERIF = "'Noto Serif SC', 'Songti SC', 'Georgia', serif";
 
 export function LoginPage() {
   const { user, login } = useAuth();
@@ -36,23 +39,25 @@ export function LoginPage() {
   };
 
   return (
-    <main className="relative min-h-screen" style={{ ...textStyle, color: tokens.textPrimary }}>
+    <main
+      className="relative min-h-screen"
+      style={{ ...textStyle, color: tokens.textPrimary, overflowAnchor: 'none' }}
+    >
       <div className="fixed inset-0" style={{ background: tokens.pageGradient }} />
+      <FullscreenHero />
       <section className="relative flex min-h-screen items-center justify-center px-6 py-10">
         <form
+          id="login-card"
           onSubmit={submit}
           className="relative w-full max-w-md rounded-2xl p-8 shadow-xl"
           style={cardSurfaceStyle(tokens)}
         >
           <div className="mb-8 flex items-center gap-3">
-            <div
-              className="flex h-11 w-11 items-center justify-center rounded-xl"
-              style={{ background: tokens.surfaceAccent }}
-            >
-              <Brain className="h-6 w-6" />
-            </div>
+            <BrandMark size={44} />
             <div>
-              <h1 className="text-2xl font-bold">AI Tutor</h1>
+              <h1 className="text-2xl font-bold" style={{ fontFamily: BRAND_SERIF }}>
+                {t('砚思', 'Inkwell')}
+              </h1>
               <p className="text-sm" style={{ color: tokens.textSecondary }}>
                 {t('登录你的学习空间', 'Sign in to your study workspace')}
               </p>

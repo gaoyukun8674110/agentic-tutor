@@ -1,6 +1,7 @@
 import { KeyRound, Languages, LogOut, Moon, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { BrandMark } from './BrandMark';
 import { useSettings } from '../utils/settings';
 
 export function TopNavbar() {
@@ -31,24 +32,7 @@ export function TopNavbar() {
             className="flex items-center gap-3"
             aria-label={t('返回书斋', 'Back to study')}
           >
-            {/* 砚台朱印 —— 品牌落款 */}
-            <span
-              className="relative flex h-10 w-10 items-center justify-center rounded-[10px]"
-              style={{
-                background: 'var(--ai-seal)',
-                color: '#f4e9df',
-                fontFamily: serif,
-                fontWeight: 700,
-                fontSize: 22,
-                boxShadow: '0 6px 16px rgba(158, 74, 60, 0.28)',
-              }}
-            >
-              <span
-                className="pointer-events-none absolute rounded-md"
-                style={{ inset: 4, border: '1px solid rgba(244, 233, 223, 0.5)' }}
-              />
-              砚
-            </span>
+            <BrandMark size={40} />
             <div className="text-left">
               <h1
                 className="text-lg leading-none"

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MATERIAL_POLL_TIMEOUT_MS, useTutorMaterials } from './useTutorMaterials';
+import type { StudyMaterial } from '../../utils/chatApi';
 
 const { fetchStudyMaterialsMock, uploadStudyMaterialMock, reingestStudyMaterialMock } = vi.hoisted(
   () => ({
@@ -32,6 +33,21 @@ function wrapper() {
 
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  };
+}
+
+function material(id: number, overrides: Partial<StudyMaterial> = {}): StudyMaterial {
+  return {
+    id,
+    filename: `notes-${id}.md`,
+    file_type: 'md',
+    status: 'ready',
+    error: null,
+    char_count: 10,
+    chunk_count: 1,
+    created_at: 'now',
+    updated_at: 'now',
+    ...overrides,
   };
 }
 
@@ -73,5 +89,34 @@ describe('useTutorMaterials', () => {
     });
 
     expect(fetchStudyMaterialsMock.mock.calls.length).toBe(callsAfterTimeout);
+  });
+
+  it('does not auto-select materials loaded from the server', async () => {
+    fetchStudyMaterialsMock.mockResolvedValue([material(1), material(2)]);
+
+    const { result } = renderHook(() => useTutorMaterials(), { wrapper: wrapper() });
+
+    await waitFor(() => expect(result.current.materials).toHaveLength(2));
+
+    expect(result.current.selectedMaterialIds).toEqual([]);
+  });
+
+  it('does not auto-select a newly uploaded material', async () => {
+    fetchStudyMaterialsMock.mockResolvedValue([]);
+    uploadStudyMaterialMock.mockResolvedValue(material(7, { filename: 'uploaded.md' }));
+
+    const { result } = renderHook(() => useTutorMaterials(), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.materials).toEqual([]));
+
+    const file = new File(['hello'], 'uploaded.md', { type: 'text/markdown' });
+    await act(async () => {
+      result.current.handleMaterialUpload({
+        target: { files: [file], value: 'uploaded.md' },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
+
+    await waitFor(() => expect(result.current.materials).toHaveLength(1));
+
+    expect(result.current.selectedMaterialIds).toEqual([]);
   });
 });

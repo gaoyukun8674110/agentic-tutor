@@ -37,13 +37,13 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
 
   const reasonLabel = (reason: string) => {
     const labels: Record<ReasonKey, string> = {
-      due_review: t('Due for review', 'Due for review'),
-      zpd: t('Ready to stretch', 'Ready to stretch'),
-      unlocked: t('Unlocked', 'Unlocked'),
+      due_review: t('待复习', 'Due for review'),
+      zpd: t('可进阶', 'Ready to stretch'),
+      unlocked: t('已解锁', 'Unlocked'),
     };
     const base = labels[reasonKey(reason)];
     return isBlocked(reason)
-      ? `${base} / ${t('Prerequisite pending', 'Prerequisite pending')}`
+      ? `${base} / ${t('前置未完成', 'Prerequisite pending')}`
       : base;
   };
 
@@ -56,11 +56,11 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
   const emptyMessage =
     data?.empty_reason === 'all_mastered'
       ? t(
-          'Everything is mastered. Start a new topic with the Tutor.',
+          '已全部掌握。用辅导开启新主题。',
           'Everything is mastered. Start a new topic with the Tutor.',
         )
       : t(
-          'Your skill map is empty. Work through a problem with the Tutor to start tracking mastery.',
+          '技能图谱还是空的。用辅导完成一道题即可开始记录掌握度。',
           'Your skill map is empty. Work through a problem with the Tutor to start tracking mastery.',
         );
 
@@ -70,15 +70,15 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
         className="mb-4 text-xs font-semibold uppercase"
         style={{ color: tokens.textMuted, letterSpacing: '0.14em' }}
       >
-        {t('Practice today', 'Practice today')}
+        {t('今日练习', 'Practice today')}
       </p>
 
       {isLoading && (
-        <p style={{ color: tokens.textSecondary }}>{t('Planning...', 'Planning...')}</p>
+        <p style={{ color: tokens.textSecondary }}>{t('规划中...', 'Planning...')}</p>
       )}
       {isError && (
         <p style={{ color: tokens.danger }}>
-          {t("Unable to load today's plan", "Unable to load today's plan")}
+          {t('无法加载今日计划', "Unable to load today's plan")}
         </p>
       )}
 
@@ -93,7 +93,7 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
             className="rounded-full px-3 py-1 text-xs font-semibold"
             style={{ background: tokens.accentPrimary, color: tokens.textInverted }}
           >
-            {t('Open Tutor', 'Open Tutor')}
+            {t('打开辅导', 'Open Tutor')}
           </button>
         </div>
       )}
@@ -112,8 +112,8 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
                   {item.skill_name}
                 </p>
                 <p className="text-xs" style={{ color: tokens.textSecondary }}>
-                  {reasonLabel(item.reason)} / {t('Mastery', 'Mastery')}{' '}
-                  {item.effective_mastery.toFixed(2)} / {item.suggested_minutes} {t('min', 'min')}
+                  {reasonLabel(item.reason)} / {t('掌握度', 'Mastery')}{' '}
+                  {item.effective_mastery.toFixed(2)} / {item.suggested_minutes} {t('分钟', 'min')}
                 </p>
               </div>
               <button
@@ -123,8 +123,8 @@ export function TodayPlanSkills({ username }: TodayPlanSkillsProps) {
                 style={{ background: tokens.accentPrimary, color: tokens.textInverted }}
               >
                 {item.action.type === 'feynman'
-                  ? t('Explain it back', 'Explain it back')
-                  : t('Start practice', 'Start practice')}
+                  ? t('讲回给我', 'Explain it back')
+                  : t('开始练习', 'Start practice')}
               </button>
             </div>
             <div

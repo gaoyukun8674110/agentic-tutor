@@ -18,7 +18,6 @@ export function useTutorMaterials() {
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<number[]>([]);
   const [materialError, setMaterialError] = useState<string | null>(null);
   const [materialPollingExpired, setMaterialPollingExpired] = useState(false);
-  const userTouchedMaterialsRef = useRef(false);
   const pollingIntervalRef = useRef<number | null>(null);
   const pollingStartedAtRef = useRef<number | null>(null);
 
@@ -73,8 +72,6 @@ export function useTutorMaterials() {
         material,
         ...(items ?? []).filter((item) => item.id !== material.id),
       ]);
-      userTouchedMaterialsRef.current = true;
-      setSelectedMaterialIds((ids) => Array.from(new Set([...ids, material.id])));
       setMaterialError(null);
       if (material.status === 'pending') {
         startMaterialPolling();
@@ -111,7 +108,7 @@ export function useTutorMaterials() {
   useEffect(() => {
     setSelectedMaterialIds((ids) => {
       const materialIds = materials.map((material) => material.id);
-      return deriveSelectedMaterialIds(materialIds, ids, userTouchedMaterialsRef.current);
+      return deriveSelectedMaterialIds(materialIds, ids);
     });
   }, [materials]);
 
@@ -134,7 +131,6 @@ export function useTutorMaterials() {
   );
 
   const toggleMaterialSelection = (materialId: number) => {
-    userTouchedMaterialsRef.current = true;
     setSelectedMaterialIds((ids) =>
       ids.includes(materialId) ? ids.filter((id) => id !== materialId) : [...ids, materialId],
     );

@@ -98,7 +98,7 @@ describe('DashboardPage data wall', () => {
 
     expect(await screen.findByTestId('data-wall')).toBeInTheDocument();
     expect(screen.getByText('砚思 · 数据总览')).toBeInTheDocument();
-    expect(screen.getByTestId('wall-clock')).toBeInTheDocument();
+    expect(screen.queryByTestId('wall-clock')).toBeNull();
   });
 
   it('renders all six KPI cells with values derived from the summary', async () => {

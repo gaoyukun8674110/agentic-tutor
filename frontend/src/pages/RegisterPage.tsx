@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Brain } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import { BrandMark } from '../components/BrandMark';
 import { Button } from '../components/ui/button';
 import { getUserFacingError } from '../utils/apiClient';
 import { cardSurfaceStyle, primaryActionStyle } from '../utils/glassStyles';
 import { useSettings } from '../utils/settings';
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_-]{3,64}$/;
+const BRAND_SERIF = "'Noto Serif SC', 'Songti SC', 'Georgia', serif";
 
 export function RegisterPage() {
   const { user, register, login } = useAuth();
@@ -68,14 +69,11 @@ export function RegisterPage() {
         style={cardSurfaceStyle(tokens)}
       >
         <div className="mb-8 flex items-center gap-3">
-          <div
-            className="flex h-11 w-11 items-center justify-center rounded-xl"
-            style={{ background: tokens.surfaceAccent }}
-          >
-            <Brain className="h-6 w-6" />
-          </div>
+          <BrandMark size={44} />
           <div>
-            <h1 className="text-2xl font-bold">AI Tutor</h1>
+            <h1 className="text-2xl font-bold" style={{ fontFamily: BRAND_SERIF }}>
+              {t('砚思', 'Inkwell')}
+            </h1>
             <p className="text-sm" style={{ color: tokens.textSecondary }}>
               {t('创建独立学习账号', 'Create your study account')}
             </p>

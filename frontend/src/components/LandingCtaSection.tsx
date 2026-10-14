@@ -9,11 +9,14 @@ import {
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 import { cn } from './ui/utils';
+import { SkyBackground } from './SkyBackground';
 
-const GRASS_SRC =
-  'https://res.cloudinary.com/dy5er7kv5/image/upload/q_auto/f_auto/v1780586778/cta-bg_mlwy5s.png';
 const VIDEO_SRC =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4';
+
+function scrollToLogin() {
+  document.getElementById('login-card')?.scrollIntoView({ behavior: 'smooth' });
+}
 
 interface FadeUpProps {
   children: ReactNode;
@@ -130,7 +133,7 @@ const seedMessages: ChatMessage[] = [
   {
     role: 'assistant',
     content:
-      "Welcome to AI Tutor. I'll help you turn weak spots into a focused practice plan. What topic should we diagnose first?",
+      "Welcome to Inkwell. I'll help you turn weak spots into a focused practice plan. What topic should we diagnose first?",
   },
   {
     role: 'user',
@@ -149,7 +152,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ initialScroll = 'bottom', animateMessagesIn = false }: ChatPanelProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>(seedMessages);
+  const [messages] = useState<ChatMessage[]>(seedMessages);
   const [draft, setDraft] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -167,21 +170,6 @@ export function ChatPanel({ initialScroll = 'bottom', animateMessagesIn = false 
     textarea.style.height = `${textarea.scrollHeight}px`;
   }, [draft]);
 
-  const send = () => {
-    const clean = draft.trim();
-    if (!clean) return;
-    setMessages((current) => [
-      ...current,
-      { role: 'user', content: clean },
-      {
-        role: 'assistant',
-        content:
-          'I saved that as a learning signal. Next, we will diagnose the error pattern and queue a short review set.',
-      },
-    ]);
-    setDraft('');
-  };
-
   return (
     <div
       className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/10"
@@ -196,7 +184,7 @@ export function ChatPanel({ initialScroll = 'bottom', animateMessagesIn = false 
           <MIcon name="auto_awesome" size={14} />
         </div>
         <div>
-          <p className="text-sm font-medium text-white">AI Tutor practice loop</p>
+          <p className="text-sm font-medium text-white">Inkwell practice loop</p>
           <p className="text-[11px] text-white/40">Diagnose, plan, practice, remember</p>
         </div>
       </div>
@@ -240,7 +228,7 @@ export function ChatPanel({ initialScroll = 'bottom', animateMessagesIn = false 
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
-                send();
+                scrollToLogin();
               }
             }}
             rows={1}
@@ -249,7 +237,7 @@ export function ChatPanel({ initialScroll = 'bottom', animateMessagesIn = false 
           />
           <button
             type="button"
-            onClick={send}
+            onClick={scrollToLogin}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-black transition-colors hover:bg-white/85"
             aria-label="Send learning question"
           >
@@ -284,7 +272,7 @@ export function VelorahHeroPreview() {
           className="text-sm tracking-tight text-white sm:text-base md:text-lg"
           style={{ fontFamily: "'Instrument Serif', serif" }}
         >
-          AI Tutor<sup className="text-[0.5em]">®</sup>
+          Inkwell<sup className="text-[0.5em]">®</sup>
         </div>
         <nav className="hidden items-center gap-4 text-[9px] text-white/60 md:flex lg:text-[10px]">
           <span className="text-white">Today</span>
@@ -307,7 +295,7 @@ export function VelorahHeroPreview() {
           <em className="not-italic text-white/55">memory.</em>
         </h1>
         <p className="animate-fade-rise-delay mt-2 max-w-[80%] text-[9px] leading-relaxed text-white/60 sm:mt-3 sm:max-w-sm sm:text-[11px] md:mt-4 md:max-w-md md:text-xs">
-          AI Tutor reads your recent answers, finds the fragile skill, and turns it into a focused
+          Inkwell reads your recent answers, finds the fragile skill, and turns it into a focused
           practice path for the next study session.
         </p>
         <button className="animate-fade-rise-delay-2 liquid-glass mt-3 rounded-full px-4 py-1.5 text-[9px] text-white sm:mt-4 sm:px-5 sm:py-2 sm:text-[10px] md:mt-5 md:px-6 md:py-2.5">
@@ -333,38 +321,19 @@ export function CtaDashboardMock() {
   );
 }
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 767px)');
-    const update = () => setIsMobile(query.matches);
-    update();
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
-  }, []);
-
-  return isMobile;
-}
-
 export function LandingCtaSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const isMobile = useIsMobile();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
   const dashboardY = useTransform(scrollYProgress, [0, 1], ['120px', '-120px']);
-  const grassY = useTransform(
-    scrollYProgress,
-    [0, 1],
-    isMobile ? ['80px', '-40px'] : ['200px', '-200px'],
-  );
 
   return (
     <section
       ref={sectionRef}
       id="study-cta"
       className="relative w-full overflow-hidden bg-black text-white"
-      style={{ background: 'linear-gradient(to bottom, transparent 0%, #14191E 100%)' }}
+      style={{ backgroundColor: 'hsl(201 100% 13%)' }}
     >
+      <SkyBackground variant="animated" />
       <div className="relative mx-auto max-w-[1080px] px-4 pb-[440px] pt-24 sm:px-6 sm:pb-[520px] sm:pt-32 md:pb-[440px] md:pt-40">
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:gap-8">
           <div className="relative z-20 max-w-[410px]">
@@ -375,12 +344,14 @@ export function LandingCtaSection() {
             </FadeUp>
             <FadeUp delay={0.1}>
               <p className="mt-6 max-w-[380px] text-base leading-[1.5] text-landing-text sm:text-lg">
-                AI Tutor diagnoses mistakes, updates your mastery map, and builds today's practice
+                Inkwell diagnoses mistakes, updates your mastery map, and builds today's practice
                 around the skills that actually need attention.
               </p>
             </FadeUp>
             <FadeUp delay={0.2} className="mt-10">
-              <PrimaryButton as="button">Start learning</PrimaryButton>
+              <PrimaryButton as="button" onClick={scrollToLogin}>
+                Start learning
+              </PrimaryButton>
             </FadeUp>
           </div>
         </div>
@@ -392,14 +363,6 @@ export function LandingCtaSection() {
       >
         <CtaDashboardMock />
       </motion.div>
-
-      <motion.img
-        src={GRASS_SRC}
-        alt=""
-        aria-hidden
-        style={{ y: grassY } as { y: ReturnType<typeof useTransform> } & CSSProperties}
-        className="pointer-events-none absolute bottom-[-40px] left-0 right-0 z-30 w-full select-none object-cover sm:bottom-[-80px] lg:bottom-[-140px]"
-      />
     </section>
   );
 }
